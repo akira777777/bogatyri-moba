@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 34230bc6e5dcf4f38a2bcc2b3bfca893, type: 3}
+  m_Name: Tugarin
+  m_EditorClassIdentifier: BogatyriMoba::BogatyriMoba.Core.BrawlerData
+  brawlerName: "\u0422\u0443\u0433\u0430\u0440\u0438\u043D \u0417\u043C\u0435\u0439"
+  icon: {fileID: 0}
+  prefab: {fileID: 0}
+  baseHealth: 2400
+  movementSpeed: 5.2
+  attackRange: 3.5
+  attackReloadTime: 0.9
+  attackDamage: 900
+  superDamage: 1000
+  superChargePerHit: 16
+  superRange: 8
+  role: 3
+  rarity: 5
+  attackType: 3
+  superType: 1
+  ultimateAbility: {fileID: 11400000, guid: 229599ae6f9e893478cfe9bc6d05df0f, type: 2}
+  gadget:
+    gadgetName: 
+    usesPerMatch: 3
+    cooldown: 5
+  starPower:
+    starPowerName: 
+    description: 
+  attackProjectilePrefab: {fileID: 7248352123397420633, guid: 7d1362c3280fa354c81d7f2b77093cbf, type: 3}
+  superProjectilePrefab: {fileID: 7248352123397420633, guid: 7d1362c3280fa354c81d7f2b77093cbf, type: 3}
+  projectileSpeed: 12

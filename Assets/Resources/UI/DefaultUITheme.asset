@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 97871f9237b3647fabeaf68d6fe8c65d, type: 3}
+  m_Name: DefaultUITheme
+  m_EditorClassIdentifier: BogatyriMoba::BogatyriMoba.UI.UITheme
+  teamBlue: {r: 0.302, g: 0.671, b: 0.969, a: 1}
+  teamRed: {r: 1, g: 0.42, b: 0.42, a: 1}
+  accentGold: {r: 1, g: 0.835, b: 0.31, a: 1}
+  hudPanelBackground: {r: 0, g: 0, b: 0, a: 0.6}
+  neutralGray: {r: 0.62, g: 0.62, b: 0.62, a: 1}
+  timerFontSize: 32
+  scoreFontSize: 28
+  gameOverTitleFontSize: 36
+  gameOverBodyFontSize: 22
+  controlLabelFontSize: 18
+  referenceResolution: {x: 1080, y: 1920}
+  canvasMatch: 0.5
+  safeAreaInsetPx: 48

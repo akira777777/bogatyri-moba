@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 34230bc6e5dcf4f38a2bcc2b3bfca893, type: 3}
+  m_Name: Konyukh
+  m_EditorClassIdentifier: BogatyriMoba::BogatyriMoba.Core.BrawlerData
+  brawlerName: "\u041A\u043E\u043D\u044E\u0445"
+  icon: {fileID: 0}
+  prefab: {fileID: 0}
+  baseHealth: 3100
+  movementSpeed: 4.2
+  attackRange: 5.5
+  attackReloadTime: 1.2
+  attackDamage: 650
+  superDamage: 0
+  superChargePerHit: 16
+  superRange: 7
+  role: 2
+  rarity: 1
+  attackType: 0
+  superType: 0
+  ultimateAbility: {fileID: 11400000, guid: cec3384f37aad5740b8b23b885f89376, type: 2}
+  gadget:
+    gadgetName: 
+    usesPerMatch: 3
+    cooldown: 5
+  starPower:
+    starPowerName: 
+    description: 
+  attackProjectilePrefab: {fileID: 7248352123397420633, guid: 7d1362c3280fa354c81d7f2b77093cbf, type: 3}
+  superProjectilePrefab: {fileID: 7248352123397420633, guid: 7d1362c3280fa354c81d7f2b77093cbf, type: 3}
+  projectileSpeed: 12

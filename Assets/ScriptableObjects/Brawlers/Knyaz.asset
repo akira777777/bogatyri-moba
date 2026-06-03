@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 34230bc6e5dcf4f38a2bcc2b3bfca893, type: 3}
+  m_Name: Knyaz
+  m_EditorClassIdentifier: BogatyriMoba::BogatyriMoba.Core.BrawlerData
+  brawlerName: "\u041A\u043D\u044F\u0437\u044C \u041A\u0438\u0435\u0432\u0441\u043A\u0438\u0439"
+  icon: {fileID: 0}
+  prefab: {fileID: 0}
+  baseHealth: 3200
+  movementSpeed: 4.1
+  attackRange: 5
+  attackReloadTime: 1.3
+  attackDamage: 700
+  superDamage: 0
+  superChargePerHit: 20
+  superRange: 7
+  role: 2
+  rarity: 2
+  attackType: 0
+  superType: 3
+  ultimateAbility: {fileID: 11400000, guid: def96f6a12b65194e9cfd44dc4b300ac, type: 2}
+  gadget:
+    gadgetName: 
+    usesPerMatch: 3
+    cooldown: 5
+  starPower:
+    starPowerName: 
+    description: 
+  attackProjectilePrefab: {fileID: 7248352123397420633, guid: 7d1362c3280fa354c81d7f2b77093cbf, type: 3}
+  superProjectilePrefab: {fileID: 7248352123397420633, guid: 7d1362c3280fa354c81d7f2b77093cbf, type: 3}
+  projectileSpeed: 12

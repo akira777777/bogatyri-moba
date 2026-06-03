@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d2509a8fa8cd34abba0b5e259724912f, type: 3}
+  m_Name: SmokeUltimate
+  m_EditorClassIdentifier: BogatyriMoba::BogatyriMoba.Core.Ultimates.SmokeUltimate
+  abilityName: "\u0414\u044B\u043C\u043E\u0432\u0430\u044F \u0437\u0430\u0432\u0435\u0441\u0430"
+  description: 
+  icon: {fileID: 0}
+  cooldown: 0.5
+  invisibilityDuration: 3
+  speedMultiplier: 1.5
+  critMultiplier: 2
+  smokeEffectPrefab: {fileID: 0}

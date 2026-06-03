@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 89cc43625d70643bdaaa597df018393f, type: 3}
+  m_Name: HorseUltimate
+  m_EditorClassIdentifier: BogatyriMoba::BogatyriMoba.Core.Ultimates.HorseUltimate
+  abilityName: "\u041A\u043E\u043D\u044C-\u043E\u0433\u043E\u043D\u044C"
+  description: 
+  icon: {fileID: 0}
+  cooldown: 0.5
+  horsePrefab: {fileID: 4706053614600540874, guid: 820b9cb6f4135cb41801058ef65a2399, type: 3}
+  speed: 8
+  damage: 400
+  knockback: 300
+  lifetime: 2.5

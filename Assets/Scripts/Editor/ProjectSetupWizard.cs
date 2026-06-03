@@ -7,6 +7,7 @@ using BogatyriMoba.Core;
 using BogatyriMoba.Core.Ultimates;
 using BogatyriMoba.GameModes;
 using BogatyriMoba.UI;
+using UnityEngine.EventSystems;
 
 namespace BogatyriMoba.EditorTools
 {
@@ -73,22 +74,22 @@ namespace BogatyriMoba.EditorTools
 
             GUILayout.Space(20);
             GUI.backgroundColor = Color.green;
-            if (GUILayout.Button("ЗАПУСТИТЬ ПОЛНУЮ НАСТРОЙКУ", GUILayout.Height(40)))
-                RunFullSetup();
+            if (GUILayout.Button("ЗАПУСТИТЬ ПОЛНУЮ НАСТРОЙКУ И ИГРУ", GUILayout.Height(40)))
+                FullSetupAndPlay();
             GUI.backgroundColor = Color.white;
         }
 
         private static void RunFullSetup()
         {
             CreateFolders();
+            SetupTagsAndLayers(); // must be early: CreateGameplay/Heist + CreateWall set tags/layers that we register here
             CreatePrefabs();
             BrawlerDataFactory.GenerateAll();
             CreateGameplayScene();
             CreateHeistScene();
-            SetupTagsAndLayers();
 
             EditorUtility.DisplayDialog("Готово!",
-                "Проект полностью настроен.\n\nСледующие шаги:\n1. Откройте Assets/Scenes/Gameplay.unity\n2. Нажмите Play — матч стартует автоматически.",
+                "Проект полностью настроен.\n\nСейчас откроется сцена и запустится Play Mode.\nМатч Gem Grab начнётся автоматически (Алёша + боты).",
                 "OK");
         }
 
@@ -237,12 +238,8 @@ namespace BogatyriMoba.EditorTools
             Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             scene.name = "Gameplay";
 
-            Camera.main.transform.position = new Vector3(0f, 0f, -10f);
-            Camera.main.orthographic = true;
-            Camera.main.orthographicSize = 8f;
-            Camera.main.backgroundColor = new Color(0.23f, 0.37f, 0.23f);
-
-            var camFollow = Camera.main.gameObject.AddComponent<CameraFollow>();
+            var cam = CreateMainCameraForScene(new Color(0.23f, 0.37f, 0.23f));
+            var camFollow = cam.gameObject.AddComponent<CameraFollow>();
 
             GameObject gmGO = new GameObject("GameManager");
             var gm = gmGO.AddComponent<GameManager>();
@@ -297,6 +294,7 @@ namespace BogatyriMoba.EditorTools
 
             AssignGameManagerPrefabs(gm);
 
+            EnsureEventSystem();
             UiHudBuilder.BuildMatchUi(gm, mode);
 
             EditorSceneManager.SaveScene(scene, "Assets/Scenes/Gameplay.unity");
@@ -308,12 +306,8 @@ namespace BogatyriMoba.EditorTools
             Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             scene.name = "Heist";
 
-            Camera.main.transform.position = new Vector3(0f, 0f, -10f);
-            Camera.main.orthographic = true;
-            Camera.main.orthographicSize = 8f;
-            Camera.main.backgroundColor = new Color(0.2f, 0.25f, 0.35f);
-
-            var camFollow = Camera.main.gameObject.AddComponent<CameraFollow>();
+            var cam = CreateMainCameraForScene(new Color(0.2f, 0.25f, 0.35f));
+            var camFollow = cam.gameObject.AddComponent<CameraFollow>();
 
             GameObject gmGO = new GameObject("GameManager");
             var gm = gmGO.AddComponent<GameManager>();
@@ -378,6 +372,7 @@ namespace BogatyriMoba.EditorTools
 
             AssignGameManagerPrefabs(gm);
 
+            EnsureEventSystem();
             UiHudBuilder.BuildMatchUi(gm, mode);
 
             EditorSceneManager.SaveScene(scene, "Assets/Scenes/Heist.unity");
@@ -411,12 +406,69 @@ namespace BogatyriMoba.EditorTools
             var col = wall.AddComponent<BoxCollider2D>();
             col.size = new Vector2(1f, 1f);
             wall.layer = LayerMask.NameToLayer("Obstacles");
+            wall.tag = "Obstacle";
+        }
+
+        /// <summary>
+        /// Creates a proper Main Camera for the new empty scene (avoids NRE on Camera.main in EmptyScene).
+        /// </summary>
+        private static Camera CreateMainCameraForScene(Color backgroundColor)
+        {
+            // Remove any accidental previous main camera
+            var oldCam = Camera.main;
+            if (oldCam != null)
+            {
+                DestroyImmediate(oldCam.gameObject);
+            }
+
+            var camGO = new GameObject("Main Camera");
+            camGO.tag = "MainCamera";
+
+            var cam = camGO.AddComponent<Camera>();
+            cam.transform.position = new Vector3(0f, 0f, -10f);
+            cam.orthographic = true;
+            cam.orthographicSize = 8f;
+            cam.backgroundColor = backgroundColor;
+            cam.clearFlags = CameraClearFlags.SolidColor;
+
+            return cam;
+        }
+
+        /// <summary>
+        /// Ensures an EventSystem exists in the scene so UI Buttons (GameOver, etc.) and raycasts work.
+        /// </summary>
+        private static void EnsureEventSystem()
+        {
+            if (Object.FindObjectOfType<EventSystem>() == null)
+            {
+                var esGO = new GameObject("EventSystem");
+                esGO.AddComponent<EventSystem>();
+                esGO.AddComponent<StandaloneInputModule>();
+            }
         }
 
         private static void SetupTagsAndLayers()
         {
             SerializedObject tagManager = new SerializedObject(AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/TagManager.asset")[0]);
+            SerializedProperty tags = tagManager.FindProperty("tags");
             SerializedProperty layers = tagManager.FindProperty("layers");
+
+            // Ensure "Obstacle" tag exists (used by projectiles for early destroy)
+            bool hasObstacleTag = false;
+            for (int i = 0; i < tags.arraySize; i++)
+            {
+                if (tags.GetArrayElementAtIndex(i).stringValue == "Obstacle")
+                {
+                    hasObstacleTag = true;
+                    break;
+                }
+            }
+            if (!hasObstacleTag)
+            {
+                tags.InsertArrayElementAtIndex(tags.arraySize);
+                tags.GetArrayElementAtIndex(tags.arraySize - 1).stringValue = "Obstacle";
+                Debug.Log("[Setup] Тег Obstacle добавлен.");
+            }
 
             bool hasObstacles = false;
             for (int i = 8; i < 32; i++)
@@ -440,9 +492,10 @@ namespace BogatyriMoba.EditorTools
                         break;
                     }
                 }
-                tagManager.ApplyModifiedProperties();
                 Debug.Log("[Setup] Слой Obstacles добавлен.");
             }
+
+            tagManager.ApplyModifiedProperties();
         }
 
         [MenuItem("Bogatyri/Play Gameplay (Auto Setup + Play)")]

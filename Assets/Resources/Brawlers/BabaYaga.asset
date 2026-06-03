@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 34230bc6e5dcf4f38a2bcc2b3bfca893, type: 3}
+  m_Name: BabaYaga
+  m_EditorClassIdentifier: BogatyriMoba::BogatyriMoba.Core.BrawlerData
+  brawlerName: "\u0411\u0430\u0431\u0430 \u042F\u0433\u0430"
+  icon: {fileID: 0}
+  prefab: {fileID: 0}
+  baseHealth: 2800
+  movementSpeed: 4.3
+  attackRange: 7
+  attackReloadTime: 1.4
+  attackDamage: 750
+  superDamage: 0
+  superChargePerHit: 15
+  superRange: 6
+  role: 5
+  rarity: 1
+  attackType: 2
+  superType: 2
+  ultimateAbility: {fileID: 11400000, guid: 473cbd931f270e7459cc53cccf4e1515, type: 2}
+  gadget:
+    gadgetName: 
+    usesPerMatch: 3
+    cooldown: 5
+  starPower:
+    starPowerName: 
+    description: 
+  attackProjectilePrefab: {fileID: 7248352123397420633, guid: 7d1362c3280fa354c81d7f2b77093cbf, type: 3}
+  superProjectilePrefab: {fileID: 7248352123397420633, guid: 7d1362c3280fa354c81d7f2b77093cbf, type: 3}
+  projectileSpeed: 12

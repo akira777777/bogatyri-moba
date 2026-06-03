@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0bc5bea3ea5e40f38d684e2e99207bb, type: 3}
+  m_Name: StampedeUltimate
+  m_EditorClassIdentifier: BogatyriMoba::BogatyriMoba.Core.Ultimates.StampedeUltimate
+  abilityName: "\u0422\u0430\u0431\u0443\u043D"
+  description: 
+  icon: {fileID: 0}
+  cooldown: 0.5
+  horsePrefab: {fileID: 4706053614600540874, guid: 820b9cb6f4135cb41801058ef65a2399, type: 3}
+  speed: 8
+  damage: 400
+  knockback: 300
+  lifetime: 2.5
+  spreadAngle: 0.35
+  horseCount: 3
