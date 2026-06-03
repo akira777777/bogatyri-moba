@@ -1,13 +1,14 @@
+using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 using BogatyriMoba.GameModes;
 
 namespace BogatyriMoba.UI
 {
     public class MatchTimerUI : MonoBehaviour
     {
-        [SerializeField] private Text timerText;
+        [SerializeField] private TextMeshProUGUI timerText;
         [SerializeField] private GameMode gameMode;
+        [SerializeField] private UITheme theme;
 
         public void SetGameMode(GameMode mode)
         {
@@ -25,7 +26,11 @@ namespace BogatyriMoba.UI
         private void Awake()
         {
             if (timerText == null)
-                timerText = GetComponent<Text>();
+                timerText = GetComponent<TextMeshProUGUI>();
+            if (theme == null)
+                theme = UITheme.LoadDefault();
+            if (timerText != null && theme != null)
+                timerText.color = theme.accentGold;
         }
 
         private void Start()

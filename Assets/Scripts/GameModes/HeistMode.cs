@@ -15,6 +15,8 @@ namespace BogatyriMoba.GameModes
         private Dictionary<int, int> teamSafeHealth = new Dictionary<int, int>();
         private Dictionary<int, Safe> teamSafes = new Dictionary<int, Safe>();
 
+        public event System.Action OnSafeHealthChanged;
+
         public override void Initialize()
         {
             base.Initialize();
@@ -76,6 +78,7 @@ namespace BogatyriMoba.GameModes
             if (!matchActive || !teamSafeHealth.ContainsKey(teamId)) return;
 
             teamSafeHealth[teamId] -= damage;
+            OnSafeHealthChanged?.Invoke();
             if (teamSafeHealth[teamId] <= 0)
             {
                 teamSafeHealth[teamId] = 0;

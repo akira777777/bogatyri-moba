@@ -16,6 +16,8 @@ namespace BogatyriMoba.GameModes
         private Dictionary<BrawlerController, int> playerGems = new Dictionary<BrawlerController, int>();
         private float gemSpawnTimer;
 
+        public event System.Action OnTeamGemsChanged;
+
         public override void Initialize()
         {
             base.Initialize();
@@ -92,6 +94,7 @@ namespace BogatyriMoba.GameModes
 
             playerGems[player]++;
             teamGems[player.TeamId]++;
+            OnTeamGemsChanged?.Invoke();
 
             // Check win
             if (teamGems[player.TeamId] >= gemsToWin)
@@ -109,7 +112,8 @@ namespace BogatyriMoba.GameModes
             {
                 teamGems[player.TeamId] -= dropped;
                 playerGems[player] = 0;
-                
+                OnTeamGemsChanged?.Invoke();
+
                 // Spawn dropped gems
                 for (int i = 0; i < dropped; i++)
                 {
