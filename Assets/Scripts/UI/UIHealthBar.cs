@@ -41,6 +41,10 @@ namespace BogatyriMoba.UI
                 return;
             }
 
+            // When parented to the brawler (WorldHealthBarFactory), local offset is enough.
+            if (transform.parent == target.transform)
+                return;
+
             transform.position = target.transform.position + offset;
         }
 

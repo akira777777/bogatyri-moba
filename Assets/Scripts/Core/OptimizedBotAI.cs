@@ -316,8 +316,10 @@ namespace BogatyriMoba.Core
         {
             if (targetEnemy != null && !targetEnemy.IsDead)
             {
-                float dist = Vector2.Distance(cachedTransform.position, targetEnemy.transform.position);
-                if (dist <= controller.GetData().attackRange && input != null)
+                float distSqr = Vector2.SqrMagnitude(
+                    (Vector2)targetEnemy.transform.position - (Vector2)cachedTransform.position);
+                float attackRangeSqr = controller.GetData().attackRange * controller.GetData().attackRange;
+                if (distSqr <= attackRangeSqr && input != null)
                 {
                     input.SetAimInput(currentAim);
                     input.OnAttackButtonDown();
@@ -392,10 +394,12 @@ namespace BogatyriMoba.Core
             Gem nearest = null;
             float nearestDist = 25f * 25f; // Max search range squared
 
-            if (SpawnManager.Instance != null)
+            var gems = SpawnManager.Instance?.ActiveGems;
+            if (gems != null)
             {
-                foreach (var g in SpawnManager.Instance.ActiveGems)
+                for (int i = 0; i < gems.Count; i++)
                 {
+                    var g = gems[i];
                     if (g == null) continue;
                     float d = Vector2.SqrMagnitude((Vector2)g.transform.position - (Vector2)cachedTransform.position);
                     if (d < nearestDist)

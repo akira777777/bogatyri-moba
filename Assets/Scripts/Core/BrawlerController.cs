@@ -46,6 +46,8 @@ namespace BogatyriMoba.Core
         {
             rb = GetComponent<Rigidbody2D>();
             input = GetComponent<PlayerInput>();
+            stealth = GetComponent<StealthComponent>();
+            buff = GetComponent<BuffComponent>();
 
             if (visualContainer == null)
             {
@@ -360,32 +362,20 @@ namespace BogatyriMoba.Core
         private float GetSpeedMultiplier()
         {
             float mult = 1f;
-            if (stealth == null)
-                stealth = GetComponent<StealthComponent>();
             if (stealth != null && stealth.IsStealthed)
                 mult *= stealth.SpeedMultiplier;
-
-            if (buff == null)
-                buff = GetComponent<BuffComponent>();
             if (buff != null && buff.IsActive)
                 mult *= buff.SpeedMultiplier;
-
             return mult;
         }
 
         private float GetDamageMultiplier()
         {
             float mult = 1f;
-            if (stealth == null)
-                stealth = GetComponent<StealthComponent>();
             if (stealth != null && stealth.IsStealthed)
                 mult *= stealth.CritMultiplier;
-
-            if (buff == null)
-                buff = GetComponent<BuffComponent>();
             if (buff != null && buff.IsActive)
                 mult *= buff.DamageMultiplier;
-
             return mult;
         }
 

@@ -147,12 +147,6 @@ namespace BogatyriMoba.Core
 
         private void HandlePlayerDeath(BrawlerController player, int teamId)
         {
-            EventBus.Publish(new PlayerDeathEvent
-            {
-                Player = player,
-                TeamId = teamId
-            });
-
             if (MatchManager.Instance != null && MatchManager.Instance.currentGameMode != null)
             {
                 if (MatchManager.Instance.currentGameMode.CanRespawn(player))
