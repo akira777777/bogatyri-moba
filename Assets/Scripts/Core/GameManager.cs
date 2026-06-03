@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using BogatyriMoba.GameModes;
 using BogatyriMoba.UI;
+using BogatyriMoba.UI.Mobile;
 
 namespace BogatyriMoba.Core
 {
