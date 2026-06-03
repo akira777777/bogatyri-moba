@@ -1,0 +1,5 @@
+﻿<Solution>
+  <Project Path="BogatyriMoba.csproj" />
+  <Project Path="BogatyriMoba.Tests.csproj" />
+  <Project Path="BogatyriMoba.Editor.csproj" />
+</Solution>

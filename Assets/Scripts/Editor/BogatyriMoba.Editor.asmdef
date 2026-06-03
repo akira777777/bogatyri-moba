@@ -1,0 +1,22 @@
+{
+    "name": "BogatyriMoba.Editor",
+    "rootNamespace": "BogatyriMoba.Editor",
+    "references": [
+        "BogatyriMoba",
+        "UnityEngine",
+        "UnityEditor",
+        "Unity.TextMeshPro",
+        "UnityEngine.UI"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

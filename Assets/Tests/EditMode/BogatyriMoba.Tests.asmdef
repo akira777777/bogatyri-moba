@@ -3,7 +3,8 @@
     "rootNamespace": "BogatyriMoba.Tests",
     "references": [
         "UnityEngine.TestRunner",
-        "UnityEditor.TestRunner"
+        "UnityEditor.TestRunner",
+        "BogatyriMoba"
     ],
     "includePlatforms": [
         "Editor"

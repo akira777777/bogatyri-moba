@@ -98,9 +98,10 @@ namespace BogatyriMoba.Core
             if (legacyAi != null)
                 Destroy(legacyAi);
 
-            var ai = bot.GetComponent<OptimizedBotAI>();
+            GameObject botGO = bot.gameObject;
+            var ai = botGO.GetComponent<OptimizedBotAI>();
             if (ai == null)
-                ai = bot.AddComponent<OptimizedBotAI>();
+                ai = botGO.AddComponent<OptimizedBotAI>();
             ai.Initialize(bot);
 
             var input = bot.GetComponent<PlayerInput>();
