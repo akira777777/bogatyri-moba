@@ -107,7 +107,7 @@ namespace BogatyriMoba.Core
                 if (target.ActorNumber == ownerActorNumber || target.TeamId == ownerTeamId)
                     return;
 
-                target.TakeDamage(damage);
+                target.TakeDamage(damage, owner);
 
                 EventBus.Publish(new DamageDealtEvent
                 {

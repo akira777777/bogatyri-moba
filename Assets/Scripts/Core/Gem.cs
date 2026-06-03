@@ -19,8 +19,9 @@ namespace BogatyriMoba.Core
 
         private void Update()
         {
-            float y = startPos.y + Mathf.Sin(Time.time * bobSpeed + bobOffset) * bobAmount;
-            transform.position = new Vector3(startPos.x, y, startPos.z);
+            var pos = transform.position;
+            pos.y = startPos.y + Mathf.Sin(Time.time * bobSpeed + bobOffset) * bobAmount;
+            transform.position = pos;
         }
 
         private void OnTriggerEnter2D(Collider2D other)
@@ -29,8 +30,7 @@ namespace BogatyriMoba.Core
             if (player == null || player.IsDead) return;
 
             OnCollected?.Invoke(player);
-            if (GameManager.Instance != null)
-                GameManager.Instance.UnregisterGem(this);
+            SpawnManager.Instance?.UnregisterGem(this);
             Destroy(gameObject);
         }
     }
