@@ -53,12 +53,12 @@ namespace BogatyriMoba.Core
             {
                 var visual = transform.Find("VisualContainer");
                 if (visual != null)
-                    visualContainer = visual;
+                    visualContainer = visual.gameObject;
             }
 
             if (projectileSpawnPoint == null && visualContainer != null)
             {
-                var spawn = visualContainer.Find("ProjectileSpawnPoint");
+                var spawn = visualContainer.transform.Find("ProjectileSpawnPoint");
                 if (spawn != null)
                     projectileSpawnPoint = spawn;
             }
@@ -171,7 +171,7 @@ namespace BogatyriMoba.Core
         private void HandleGadget()
         {
             if (!input.GadgetPressed) return;
-            input.GadgetPressed = false;
+            input.ClearGadgetFlag();
         }
 
         private void PerformAttack()

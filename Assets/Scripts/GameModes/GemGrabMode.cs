@@ -129,10 +129,11 @@ namespace BogatyriMoba.GameModes
 
         public override Vector3 GetRespawnPosition(int teamId)
         {
-            if (teamId == 0 && GameManager.Instance != null && GameManager.Instance.team1SpawnPoints.Length > 0)
-                return GameManager.Instance.team1SpawnPoints[0].position;
-            if (teamId == 1 && GameManager.Instance != null && GameManager.Instance.team2SpawnPoints.Length > 0)
-                return GameManager.Instance.team2SpawnPoints[0].position;
+            var sm = SpawnManager.Instance;
+            if (teamId == 0 && sm != null && sm.team1SpawnPoints != null && sm.team1SpawnPoints.Length > 0)
+                return sm.team1SpawnPoints[0].position;
+            if (teamId == 1 && sm != null && sm.team2SpawnPoints != null && sm.team2SpawnPoints.Length > 0)
+                return sm.team2SpawnPoints[0].position;
             return Vector3.zero;
         }
 
