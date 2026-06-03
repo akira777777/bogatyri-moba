@@ -16,7 +16,17 @@ namespace BogatyriMoba.Core
         [SerializeField] private Transform visualContainer;
 
         public int ActorNumber { get; set; } = -1;
-        public int TeamId { get; set; } = 0;
+        
+        private int _teamId = 0;
+        public int TeamId
+        {
+            get => _teamId;
+            set
+            {
+                _teamId = value;
+                UpdateTeamVisuals();
+            }
+        }
 
         public int CurrentHealth { get; private set; }
         public int MaxHealth { get; private set; }
@@ -406,5 +416,23 @@ namespace BogatyriMoba.Core
         }
 
         public BrawlerData GetData() => data;
+
+        private void UpdateTeamVisuals()
+        {
+            var sr = GetComponent<SpriteRenderer>();
+            if (sr == null) sr = GetComponentInChildren<SpriteRenderer>();
+            if (sr != null)
+            {
+                // Set color: blue for Team 0 (Blue), red for Team 1 (Red)
+                sr.color = (_teamId == 0) ? new Color(0.2f, 0.6f, 1f) : new Color(1f, 0.3f, 0.3f);
+                
+                // Replace default white square with round Knob disc
+                var knob = Resources.GetBuiltinResource<Sprite>("UI/Skin/Knob.psd");
+                if (knob != null)
+                {
+                    sr.sprite = knob;
+                }
+            }
+        }
     }
 }

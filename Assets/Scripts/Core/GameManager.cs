@@ -123,6 +123,9 @@ namespace BogatyriMoba.Core
         {
             if (evt.IsLocal && cameraFollow != null)
                 cameraFollow.SetTarget(evt.Player.transform);
+
+            // Attach health bar and name tag above player/bot
+            WorldHealthBarFactory.AttachToBrawler(evt.Player, null);
         }
 
         private void OnMatchEnded(MatchEndedEvent evt)

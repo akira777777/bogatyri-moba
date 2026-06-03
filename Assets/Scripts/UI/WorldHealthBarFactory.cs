@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 using BogatyriMoba.Core;
 
 namespace BogatyriMoba.UI
@@ -24,7 +25,7 @@ namespace BogatyriMoba.UI
             root.AddComponent<GraphicRaycaster>();
 
             var rect = root.GetComponent<RectTransform>();
-            rect.sizeDelta = new Vector2(1.2f, 0.2f);
+            rect.sizeDelta = new Vector2(120f, 20f);
             rect.localScale = Vector3.one * 0.01f;
 
             var bgGo = new GameObject("Background");
@@ -53,6 +54,23 @@ namespace BogatyriMoba.UI
 
             Color tint = brawler.TeamId == GameManager.TEAM_BLUE ? theme.teamBlue : theme.teamRed;
             fillImage.color = tint;
+
+            // Add Name Text
+            var nameGo = new GameObject("BrawlerName");
+            nameGo.transform.SetParent(root.transform, false);
+            var nameRect = nameGo.AddComponent<RectTransform>();
+            nameRect.anchorMin = new Vector2(0.5f, 1f);
+            nameRect.anchorMax = new Vector2(0.5f, 1f);
+            nameRect.pivot = new Vector2(0.5f, 0f);
+            nameRect.anchoredPosition = new Vector2(0f, 4f);
+            nameRect.sizeDelta = new Vector2(200f, 30f);
+
+            var nameText = nameGo.AddComponent<TextMeshProUGUI>();
+            nameText.text = brawler.GetData() != null ? brawler.GetData().brawlerName : brawler.name;
+            nameText.fontSize = 14f;
+            nameText.alignment = TextAlignmentOptions.Center;
+            nameText.color = Color.white;
+            nameText.raycastTarget = false;
 
             var healthBar = root.AddComponent<UIHealthBar>();
             healthBar.Configure(fillImage, bgImage);
