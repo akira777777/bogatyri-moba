@@ -100,7 +100,7 @@ namespace BogatyriMoba.Core
 
             var ai = bot.GetComponent<OptimizedBotAI>();
             if (ai == null)
-                ai = bot.AddComponent<OptimizedBotAI>();
+                ai = bot.gameObject.AddComponent<OptimizedBotAI>();
             ai.Initialize(bot);
 
             var input = bot.GetComponent<PlayerInput>();
