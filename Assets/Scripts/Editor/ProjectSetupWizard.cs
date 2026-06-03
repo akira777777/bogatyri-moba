@@ -15,23 +15,21 @@ namespace BogatyriMoba.EditorTools
         [UnityEditor.InitializeOnLoadMethod]
         static void TryAutoStartFromCLI()
         {
-            Debug.Log("[AutoStart] TryAutoStartFromCLI invoked.");
-            string scenePath = "Assets/Scenes/Gameplay.unity";
-            if (!System.IO.File.Exists(scenePath))
+            string[] args = System.Environment.GetCommandLineArgs();
+            foreach (var a in args)
             {
-                Debug.Log("[AutoStart] No Gameplay scene found - auto running full setup + play.");
-                UnityEditor.EditorApplication.delayCall += () =>
+                if (a.IndexOf("FullSetupAndPlay", System.StringComparison.OrdinalIgnoreCase) >= 0 ||
+                    a.IndexOf("start-game", System.StringComparison.OrdinalIgnoreCase) >= 0)
                 {
-                    if (!UnityEditor.EditorApplication.isPlayingOrWillChangePlaymode)
+                    UnityEditor.EditorApplication.delayCall += () =>
                     {
-                        Debug.Log("[AutoStart] Invoking FullSetupAndPlay from delayCall.");
-                        FullSetupAndPlay();
-                    }
-                };
-            }
-            else
-            {
-                Debug.Log("[AutoStart] Gameplay scene already present.");
+                        if (!UnityEditor.EditorApplication.isPlayingOrWillChangePlaymode)
+                        {
+                            FullSetupAndPlay();
+                        }
+                    };
+                    break;
+                }
             }
         }
 
@@ -75,7 +73,7 @@ namespace BogatyriMoba.EditorTools
             GUI.backgroundColor = Color.white;
         }
 
-        private static void RunFullSetup()
+        public static void RunFullSetup()
         {
             CreateFolders();
             CreatePrefabs();

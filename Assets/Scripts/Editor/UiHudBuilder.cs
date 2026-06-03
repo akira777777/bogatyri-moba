@@ -69,14 +69,11 @@ namespace BogatyriMoba.EditorTools
             SetPrivateField(hudController, "heistSafeHudUI", heistHud);
 
             var gameOver = CreateGameOver(safeArea.transform, theme);
-            gm.gameOverUI = gameOver;
-
+            // gameOver and mobile controls created in scene; no longer assigned to GameManager
             var mobile = CreateMobileControls(safeArea.transform, theme);
-            gm.mobileControlsUI = mobile;
 
             hudController.BindGameMode(mode);
-            gm.matchHud = hudController;
-            gm.timerUI = timerUI;
+            // timerUI wired via SetPrivateField on hudController above
 
             return hudController;
         }
