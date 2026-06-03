@@ -286,11 +286,26 @@ namespace BogatyriMoba.EditorTools
             GameObject gemParent = new GameObject("Gems");
             spawnManager.gemSpawnParent = gemParent.transform;
 
+            var mineSr = gemParent.AddComponent<SpriteRenderer>();
+            mineSr.sortingOrder = -1;
+            mineSr.transform.localScale = Vector3.one * 1.5f;
+            string minePath = "Assets/Sprites/GemMine.png";
+            if (System.IO.File.Exists(minePath))
+            {
+                var importer = AssetImporter.GetAtPath(minePath) as TextureImporter;
+                if (importer != null && importer.textureType != TextureImporterType.Sprite)
+                {
+                    importer.textureType = TextureImporterType.Sprite;
+                    importer.SaveAndReimport();
+                }
+                mineSr.sprite = AssetDatabase.LoadAssetAtPath<Sprite>(minePath);
+            }
+
             GameObject obstacles = new GameObject("Obstacles");
-            CreateWall(obstacles.transform, new Vector3(0f, 6f, 0f), new Vector3(4f, 0.5f, 1f));
-            CreateWall(obstacles.transform, new Vector3(0f, -6f, 0f), new Vector3(4f, 0.5f, 1f));
-            CreateWall(obstacles.transform, new Vector3(-5f, 0f, 0f), new Vector3(1f, 3f, 1f));
-            CreateWall(obstacles.transform, new Vector3(5f, 0f, 0f), new Vector3(1f, 3f, 1f));
+            CreateWall(obstacles.transform, new Vector3(0f, 6f, 0f), new Vector3(4f, 0.5f, 1f), true); // rock
+            CreateWall(obstacles.transform, new Vector3(0f, -6f, 0f), new Vector3(4f, 0.5f, 1f), true); // rock
+            CreateWall(obstacles.transform, new Vector3(-5f, 0f, 0f), new Vector3(1f, 3f, 1f), false); // tree
+            CreateWall(obstacles.transform, new Vector3(5f, 0f, 0f), new Vector3(1f, 3f, 1f), false); // tree
 
             AssignGameManagerPrefabs(gm);
 
@@ -367,8 +382,8 @@ namespace BogatyriMoba.EditorTools
             spawnManager.gemSpawnParent = gemParent.transform;
 
             GameObject obstacles = new GameObject("Obstacles");
-            CreateWall(obstacles.transform, new Vector3(0f, 5f, 0f), new Vector3(6f, 0.5f, 1f));
-            CreateWall(obstacles.transform, new Vector3(0f, -5f, 0f), new Vector3(6f, 0.5f, 1f));
+            CreateWall(obstacles.transform, new Vector3(0f, 5f, 0f), new Vector3(6f, 0.5f, 1f), true); // rock
+            CreateWall(obstacles.transform, new Vector3(0f, -5f, 0f), new Vector3(6f, 0.5f, 1f), false); // tree
 
             AssignGameManagerPrefabs(gm);
 
@@ -390,19 +405,33 @@ namespace BogatyriMoba.EditorTools
                 spawnManager.gemPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Gem.prefab");
         }
 
-        private static void CreateWall(Transform parent, Vector3 position, Vector3 scale)
+        private static void CreateWall(Transform parent, Vector3 position, Vector3 scale, bool isRock = true)
         {
-            GameObject wall = GameObject.CreatePrimitive(PrimitiveType.Quad);
-            wall.name = "Wall";
+            GameObject wall = new GameObject("Wall");
             wall.transform.SetParent(parent);
             wall.transform.position = position;
             wall.transform.localScale = scale;
 
-            var renderer = wall.GetComponent<MeshRenderer>();
-            renderer.sharedMaterial = new Material(Shader.Find("Sprites/Default"));
-            renderer.sharedMaterial.color = new Color(0.3f, 0.4f, 0.3f);
+            var sr = wall.AddComponent<SpriteRenderer>();
+            string spriteName = isRock ? "RockObstacle" : "TreeObstacle";
+            string spritePath = "Assets/Sprites/" + spriteName + ".png";
 
-            DestroyImmediate(wall.GetComponent<Collider>());
+            if (System.IO.File.Exists(spritePath))
+            {
+                var importer = AssetImporter.GetAtPath(spritePath) as TextureImporter;
+                if (importer != null && importer.textureType != TextureImporterType.Sprite)
+                {
+                    importer.textureType = TextureImporterType.Sprite;
+                    importer.SaveAndReimport();
+                }
+                sr.sprite = AssetDatabase.LoadAssetAtPath<Sprite>(spritePath);
+            }
+            else
+            {
+                sr.sprite = AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/Background.psd");
+                sr.color = new Color(0.3f, 0.4f, 0.3f);
+            }
+
             var col = wall.AddComponent<BoxCollider2D>();
             col.size = new Vector2(1f, 1f);
             wall.layer = LayerMask.NameToLayer("Obstacles");
