@@ -26,7 +26,7 @@ namespace BogatyriMoba.Core.Ultimates
             else
             {
                 var rb = horseObj.GetComponent<Rigidbody2D>();
-                if (rb != null) rb.velocity = aimDir * speed;
+                if (rb != null) rb.linearVelocity = aimDir * speed;
                 Object.Destroy(horseObj, lifetime);
             }
         }

@@ -12,6 +12,27 @@ namespace BogatyriMoba.EditorTools
 {
     public class ProjectSetupWizard : EditorWindow
     {
+        [UnityEditor.InitializeOnLoadMethod]
+        static void TryAutoStartFromCLI()
+        {
+            string[] args = System.Environment.GetCommandLineArgs();
+            foreach (var a in args)
+            {
+                if (a.IndexOf("FullSetupAndPlay", System.StringComparison.OrdinalIgnoreCase) >= 0 ||
+                    a.IndexOf("start-game", System.StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    UnityEditor.EditorApplication.delayCall += () =>
+                    {
+                        if (!UnityEditor.EditorApplication.isPlayingOrWillChangePlaymode)
+                        {
+                            FullSetupAndPlay();
+                        }
+                    };
+                    break;
+                }
+            }
+        }
+
         [MenuItem("Bogatyri/Setup Project (Full Setup)")]
         static void ShowWindow()
         {
@@ -416,6 +437,30 @@ namespace BogatyriMoba.EditorTools
                 }
                 tagManager.ApplyModifiedProperties();
                 Debug.Log("[Setup] Слой Obstacles добавлен.");
+            }
+        }
+
+        [MenuItem("Bogatyri/Play Gameplay (Auto Setup + Play)")]
+        public static void FullSetupAndPlay()
+        {
+            RunFullSetup();
+            string scenePath = "Assets/Scenes/Gameplay.unity";
+            if (System.IO.File.Exists(scenePath))
+            {
+                EditorSceneManager.OpenScene(scenePath);
+                EditorApplication.delayCall += () =>
+                {
+                    if (!EditorApplication.isPlaying)
+                    {
+                        EditorApplication.EnterPlaymode();
+                        Debug.Log("[Setup] Entered play mode for Gameplay scene.");
+                    }
+                };
+                Debug.Log("[Setup] Gameplay scene opened. Entering play mode...");
+            }
+            else
+            {
+                Debug.LogError("[Setup] Gameplay scene not found after setup.");
             }
         }
     }

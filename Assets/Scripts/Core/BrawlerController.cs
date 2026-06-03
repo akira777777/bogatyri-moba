@@ -124,7 +124,7 @@ namespace BogatyriMoba.Core
 
             if (IsStunned)
             {
-                rb.velocity = Vector2.zero;
+                rb.linearVelocity = Vector2.zero;
                 return;
             }
 
@@ -140,7 +140,7 @@ namespace BogatyriMoba.Core
 
             Vector2 move = input.MoveDirection;
             float speed = data.movementSpeed * GetSpeedMultiplier();
-            rb.velocity = move * speed;
+            rb.linearVelocity = move * speed;
 
             if (move.x != 0 && visualContainer != null)
             {
@@ -354,7 +354,7 @@ namespace BogatyriMoba.Core
         {
             IsStunned = true;
             stunTimer = duration;
-            rb.velocity = Vector2.zero;
+            rb.linearVelocity = Vector2.zero;
         }
 
         private float GetSpeedMultiplier()
@@ -392,7 +392,7 @@ namespace BogatyriMoba.Core
         private void Die(BrawlerController killer = null)
         {
             IsDead = true;
-            rb.velocity = Vector2.zero;
+            rb.linearVelocity = Vector2.zero;
             OnDeath?.Invoke();
 
             EventBus.Publish(new PlayerDeathEvent
