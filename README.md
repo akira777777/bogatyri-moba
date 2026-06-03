@@ -103,6 +103,17 @@
 | Князь | Золотой стяг | `BuffUltimate` |
 | Конюх | Табун | `StampedeUltimate` |
 
+## In-match UI и локализация
+
+После копирования скриптов в Unity:
+
+1. Установите пакеты из `Packages/manifest.json` (TextMesh Pro, Localization, Addressables).
+2. Импортируйте TMP Essential Resources при первом запуске (`Window → TextMeshPro → Import TMP Essential Resources`).
+3. Запустите **Bogatyri → Setup Project (Full Setup)** — создаёт Canvas с таймером, счётом кристаллов, game-over, мобильными стиками и `DefaultUITheme`.
+4. Смена языка в редакторе: **Bogatyri → Locale → Use Russian / English** (сохраняется в `PlayerPrefs`).
+
+Строки RU/EN для матча: `Assets/Scripts/Localization/LocalizationCatalog.cs`. Стиль: `Docs/UIStyleGuide.md`.
+
 ## Roadmap
 
 ### MVP (8–10 недель)
@@ -112,9 +123,11 @@
 - [x] Gem Grab режим
 - [x] Heist режим (базовая реализация)
 - [x] AI ботов
+- [x] In-match HUD (таймер, счёт, game-over, HP-бары)
+- [x] Локализация RU/EN (in-match)
+- [x] Мобильный UI (джойстики + кнопки, Android/iOS)
 - [ ] Photon PUN 2 интеграция
 - [ ] Серверная валидация
-- [ ] Мобильный UI (джойстик)
 - [ ] Power Level 1–5
 - [ ] Trophy Road
 - [ ] Звуки и VFX

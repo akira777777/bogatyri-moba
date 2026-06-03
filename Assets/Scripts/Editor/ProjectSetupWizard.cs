@@ -71,8 +71,10 @@ namespace BogatyriMoba.EditorTools
             string[] folders =
             {
                 "Assets/Prefabs",
+                "Assets/Prefabs/UI",
                 "Assets/Scenes",
                 "Assets/Resources",
+                "Assets/Resources/UI",
                 "Assets/Resources/Brawlers",
                 "Assets/Materials",
                 "Assets/Animations",
@@ -260,8 +262,7 @@ namespace BogatyriMoba.EditorTools
 
             AssignGameManagerPrefabs(gm);
 
-            var timerUI = CreateHud(mode);
-            gm.timerUI = timerUI;
+            UiHudBuilder.BuildMatchUi(gm, mode);
 
             EditorSceneManager.SaveScene(scene, "Assets/Scenes/Gameplay.unity");
             Debug.Log("[Setup] Сцена Gameplay создана.");
@@ -333,8 +334,7 @@ namespace BogatyriMoba.EditorTools
 
             AssignGameManagerPrefabs(gm);
 
-            var timerUI = CreateHud(mode);
-            gm.timerUI = timerUI;
+            UiHudBuilder.BuildMatchUi(gm, mode);
 
             EditorSceneManager.SaveScene(scene, "Assets/Scenes/Heist.unity");
             Debug.Log("[Setup] Сцена Heist создана.");
@@ -346,41 +346,6 @@ namespace BogatyriMoba.EditorTools
                 gm.brawlerPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Brawler.prefab");
             if (System.IO.File.Exists("Assets/Prefabs/Gem.prefab"))
                 gm.gemPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Gem.prefab");
-        }
-
-        private static MatchTimerUI CreateHud(GameMode mode)
-        {
-            GameObject canvasGO = new GameObject("Canvas");
-            var canvas = canvasGO.AddComponent<Canvas>();
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            canvasGO.AddComponent<UnityEngine.UI.CanvasScaler>();
-            canvasGO.AddComponent<UnityEngine.UI.GraphicRaycaster>();
-
-            GameObject hudGO = new GameObject("HUD");
-            hudGO.transform.SetParent(canvasGO.transform);
-            var hudRect = hudGO.AddComponent<RectTransform>();
-            hudRect.anchorMin = Vector2.zero;
-            hudRect.anchorMax = Vector2.one;
-            hudRect.offsetMin = Vector2.zero;
-            hudRect.offsetMax = Vector2.zero;
-
-            GameObject timerGO = new GameObject("TimerText");
-            timerGO.transform.SetParent(hudGO.transform);
-            var timerRect = timerGO.AddComponent<RectTransform>();
-            timerRect.anchorMin = new Vector2(0.5f, 1f);
-            timerRect.anchorMax = new Vector2(0.5f, 1f);
-            timerRect.anchoredPosition = new Vector2(0f, -30f);
-            timerRect.sizeDelta = new Vector2(200f, 50f);
-            var timerText = timerGO.AddComponent<UnityEngine.UI.Text>();
-            timerText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            timerText.fontSize = 32;
-            timerText.alignment = TextAnchor.MiddleCenter;
-            timerText.color = Color.yellow;
-            timerText.text = "2:30";
-
-            var timerUI = timerGO.AddComponent<MatchTimerUI>();
-            timerUI.SetGameMode(mode);
-            return timerUI;
         }
 
         private static void CreateWall(Transform parent, Vector3 position, Vector3 scale)

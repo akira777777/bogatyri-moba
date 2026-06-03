@@ -2,6 +2,8 @@ using UnityEngine;
 using System.Collections.Generic;
 using BogatyriMoba.GameModes;
 using BogatyriMoba.UI;
+using BogatyriMoba.UI.Mobile;
+using BogatyriMoba.Localization;
 
 namespace BogatyriMoba.Core
 {
@@ -28,10 +30,10 @@ namespace BogatyriMoba.Core
         public GameObject gemPrefab;
 
         [Header("UI")]
+        public MatchHudController matchHud;
         public MatchTimerUI timerUI;
-        public GameObject gameOverPanel;
-        public UnityEngine.UI.Text resultTitle;
-        public UnityEngine.UI.Text resultText;
+        public GameOverUI gameOverUI;
+        public MobileControlsUI mobileControlsUI;
 
         [Header("Players")]
         public List<BrawlerController> allPlayers = new List<BrawlerController>();
@@ -55,10 +57,13 @@ namespace BogatyriMoba.Core
 
         private void Start()
         {
+            LocaleManager.Initialize();
+
             if (currentGameMode != null)
             {
                 currentGameMode.Initialize();
                 currentGameMode.OnMatchEnded += HandleMatchEnded;
+                BindMatchHud(currentGameMode);
             }
         }
 
@@ -78,6 +83,9 @@ namespace BogatyriMoba.Core
             if (cameraFollow != null)
                 cameraFollow.SetTarget(localPlayer.transform);
 
+            BindMobileControls(localPlayer);
+            BindMatchHud(currentGameMode);
+
             var botPool = new List<string>(BotBrawlerKeys);
             botPool.RemoveAll(key => key == playerData.name);
 
@@ -93,8 +101,22 @@ namespace BogatyriMoba.Core
                     SpawnGem();
             }
 
-            if (timerUI != null)
-                timerUI.SetGameMode(currentGameMode);
+        }
+
+        private void BindMatchHud(GameMode mode)
+        {
+            if (matchHud != null)
+                matchHud.BindGameMode(mode);
+            else if (timerUI != null)
+                timerUI.SetGameMode(mode);
+        }
+
+        private void BindMobileControls(BrawlerController player)
+        {
+            if (mobileControlsUI == null || player == null) return;
+            var input = player.GetComponent<PlayerInput>();
+            if (input != null)
+                mobileControlsUI.BindPlayer(input);
         }
 
         public BrawlerController SpawnPlayer(BrawlerData data, int teamId, Vector3 position)
@@ -116,6 +138,7 @@ namespace BogatyriMoba.Core
             allPlayers.Add(controller);
             BrawlerRegistry.Register(controller);
             currentGameMode?.RegisterPlayer(controller, teamId);
+            WorldHealthBarFactory.AttachToBrawler(controller, UITheme.LoadDefault());
 
             return controller;
         }
@@ -185,23 +208,11 @@ namespace BogatyriMoba.Core
 
         private void HandleMatchEnded(int winningTeam)
         {
-            if (gameOverPanel != null)
-                gameOverPanel.SetActive(true);
+            int blueGems = currentGameMode is GemGrabMode gg ? gg.GetTeamGems(TEAM_BLUE) : 0;
+            int redGems = currentGameMode is GemGrabMode gg2 ? gg2.GetTeamGems(TEAM_RED) : 0;
 
-            bool won = winningTeam == TEAM_BLUE;
-            if (resultTitle != null)
-            {
-                resultTitle.text = won ? "Победа!" : winningTeam == -1 ? "Ничья!" : "Поражение!";
-                resultTitle.color = won ? new Color(0.3f, 0.67f, 0.97f) : winningTeam == -1 ? Color.gray : new Color(1f, 0.42f, 0.42f);
-            }
-            if (resultText != null)
-            {
-                string blueGems = currentGameMode is GemGrabMode gg ? gg.GetTeamGems(TEAM_BLUE).ToString() : "?";
-                string redGems = currentGameMode is GemGrabMode gg2 ? gg2.GetTeamGems(TEAM_RED).ToString() : "?";
-                resultText.text = won
-                    ? $"Синяя команда победила! {blueGems} vs {redGems}"
-                    : $"Красная команда победила! {redGems} vs {blueGems}";
-            }
+            if (gameOverUI != null)
+                gameOverUI.Show(winningTeam, blueGems, redGems);
         }
 
         private void OnDestroy()

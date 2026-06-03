@@ -27,6 +27,7 @@ namespace BogatyriMoba.GameModes
                 teamSafeHealth[i] = safeHealth;
 
             SpawnSafes();
+            OnSafeHealthChanged?.Invoke();
         }
 
         private void SpawnSafes()

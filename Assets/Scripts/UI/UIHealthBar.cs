@@ -33,15 +33,6 @@ namespace BogatyriMoba.UI
             }
         }
 
-        private void Start()
-        {
-            if (target != null)
-            {
-                target.OnHealthChanged += UpdateHealth;
-                UpdateHealth(target.CurrentHealth, target.MaxHealth);
-            }
-        }
-
         private void LateUpdate()
         {
             if (target == null)
