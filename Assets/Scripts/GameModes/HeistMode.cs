@@ -8,25 +8,48 @@ namespace BogatyriMoba.GameModes
     {
         [Header("Heist Settings")]
         public int safeHealth = 30000;
-        public Transform[] safePositions; // one per team
-        
+        public GameObject safePrefab;
+        public Transform blueSafePosition;
+        public Transform redSafePosition;
+
         private Dictionary<int, int> teamSafeHealth = new Dictionary<int, int>();
-        private Dictionary<int, GameObject> teamSafes = new Dictionary<int, GameObject>();
+        private Dictionary<int, Safe> teamSafes = new Dictionary<int, Safe>();
 
         public override void Initialize()
         {
             base.Initialize();
             teamSafeHealth.Clear();
-            
+            teamSafes.Clear();
+
             for (int i = 0; i < teamCount; i++)
-            {
                 teamSafeHealth[i] = safeHealth;
-            }
+
+            SpawnSafes();
+        }
+
+        private void SpawnSafes()
+        {
+            if (safePrefab == null) return;
+
+            if (blueSafePosition != null)
+                teamSafes[GameManager.TEAM_BLUE] = CreateSafe(blueSafePosition.position, GameManager.TEAM_BLUE);
+
+            if (redSafePosition != null)
+                teamSafes[GameManager.TEAM_RED] = CreateSafe(redSafePosition.position, GameManager.TEAM_RED);
+        }
+
+        private Safe CreateSafe(Vector3 position, int teamId)
+        {
+            var go = Instantiate(safePrefab, position, Quaternion.identity);
+            var safe = go.GetComponent<Safe>();
+            if (safe == null)
+                safe = go.AddComponent<Safe>();
+            safe.Configure(teamId, this);
+            return safe;
         }
 
         protected override void OnTimeExpired()
         {
-            // Time over: team with more safe health wins
             int winningTeam = -1;
             int maxHealth = -1;
             bool draw = false;
@@ -56,8 +79,7 @@ namespace BogatyriMoba.GameModes
             if (teamSafeHealth[teamId] <= 0)
             {
                 teamSafeHealth[teamId] = 0;
-                // Other team wins
-                int otherTeam = teamId == 0 ? 1 : 0;
+                int otherTeam = teamId == GameManager.TEAM_BLUE ? GameManager.TEAM_RED : GameManager.TEAM_BLUE;
                 EndMatch(otherTeam);
             }
         }
@@ -83,7 +105,17 @@ namespace BogatyriMoba.GameModes
 
         public override Vector3 GetRespawnPosition(int teamId)
         {
-            return Vector3.zero; // TODO: spawn points
+            if (GameManager.Instance == null) return Vector3.zero;
+
+            if (teamId == GameManager.TEAM_BLUE && GameManager.Instance.team1SpawnPoints != null &&
+                GameManager.Instance.team1SpawnPoints.Length > 0)
+                return GameManager.Instance.team1SpawnPoints[0].position;
+
+            if (teamId == GameManager.TEAM_RED && GameManager.Instance.team2SpawnPoints != null &&
+                GameManager.Instance.team2SpawnPoints.Length > 0)
+                return GameManager.Instance.team2SpawnPoints[0].position;
+
+            return Vector3.zero;
         }
     }
 }

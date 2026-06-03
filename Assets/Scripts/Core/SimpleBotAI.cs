@@ -1,15 +1,17 @@
 using UnityEngine;
-using System.Collections.Generic;
+using BogatyriMoba.GameModes;
 
 namespace BogatyriMoba.Core
 {
+    [DefaultExecutionOrder(50)]
     [RequireComponent(typeof(BrawlerController))]
     public class SimpleBotAI : MonoBehaviour
     {
         [SerializeField] private float reactionTime = 0.5f;
         [SerializeField] private float moveRandomness = 0.3f;
-        
+
         private BrawlerController controller;
+        private PlayerInput input;
         private float reactionTimer;
         private Vector2 currentAim;
         private Vector2 currentMove;
@@ -24,6 +26,7 @@ namespace BogatyriMoba.Core
         {
             if (controller == null)
                 controller = GetComponent<BrawlerController>();
+            input = GetComponent<PlayerInput>();
         }
 
         private void Update()
@@ -37,46 +40,34 @@ namespace BogatyriMoba.Core
                 Think();
             }
 
-            // Apply movement
-            var rb = GetComponent<Rigidbody2D>();
-            if (rb != null)
+            if (input != null)
             {
-                float speed = controller.GetData().movementSpeed;
-                rb.velocity = currentMove * speed;
+                input.SetMoveInput(currentMove);
+                if (currentAim.sqrMagnitude > 0.01f)
+                    input.SetAimInput(currentAim);
             }
 
-            // Attack if target in range
             if (target != null && !target.IsDead)
             {
+                float attackRange = controller.GetData().attackRange;
                 float dist = Vector2.Distance(transform.position, target.transform.position);
-                if (dist < controller.GetData().attackRange)
+                if (dist <= attackRange && input != null)
                 {
-                    // Simulate attack
-                    var input = GetComponent<PlayerInput>();
-                    if (input != null)
-                    {
-                        input.SetAimInput(currentAim);
-                        input.OnAttackButtonDown();
-                    }
+                    input.SetAimInput(currentAim);
+                    input.OnAttackButtonDown();
                 }
 
-                if (controller.HasSuperReady && dist < controller.GetData().superRange * 1.2f)
-                {
-                    var input = GetComponent<PlayerInput>();
-                    if (input != null)
-                        input.OnSuperButtonDown();
-                }
+                if (controller.HasSuperReady && dist < controller.GetData().superRange * 1.2f && input != null)
+                    input.OnSuperButtonDown();
             }
         }
 
         private void Think()
         {
-            // Find nearest enemy
             BrawlerController nearest = null;
             float nearestDist = float.MaxValue;
-            
-            var allPlayers = FindObjectsOfType<BrawlerController>();
-            foreach (var p in allPlayers)
+
+            foreach (var p in BrawlerRegistry.AllPlayers)
             {
                 if (p == controller || p.IsDead || p.TeamId == controller.TeamId) continue;
                 float d = Vector2.Distance(transform.position, p.transform.position);
@@ -94,60 +85,61 @@ namespace BogatyriMoba.Core
                 return;
             }
 
-            Vector2 toEnemy = target.transform.position - transform.position;
+            Vector2 toEnemy = (Vector2)target.transform.position - (Vector2)transform.position;
             currentAim = toEnemy.normalized;
             float dEnemy = toEnemy.magnitude;
+            float attackRange = controller.GetData().attackRange;
 
-            // Find nearest gem
             Gem nearestGem = null;
-            float gemDist = 200f;
-            var allGems = FindObjectsOfType<Gem>();
-            foreach (var g in allGems)
+            float gemDist = attackRange * 3f;
+            if (GameManager.Instance != null)
             {
-                float gd = Vector2.Distance(transform.position, g.transform.position);
-                if (gd < gemDist)
+                foreach (var g in GameManager.Instance.ActiveGems)
                 {
-                    gemDist = gd;
-                    nearestGem = g;
+                    if (g == null) continue;
+                    float gd = Vector2.Distance(transform.position, g.transform.position);
+                    if (gd < gemDist)
+                    {
+                        gemDist = gd;
+                        nearestGem = g;
+                    }
                 }
             }
 
             float hpPct = (float)controller.CurrentHealth / controller.MaxHealth;
-            bool hasGems = false; // TODO: Track gems on bot
+            bool hasGems = false;
+            if (GameManager.Instance != null && GameManager.Instance.currentGameMode is GemGrabMode gemMode)
+                hasGems = gemMode.GetPlayerGems(controller) > 0;
 
-            if (hpPct < 0.3f)
+            if (hasGems && hpPct < 0.5f)
             {
-                // Retreat
-                Vector2 retreatDir = -toEnemy.normalized;
-                currentMove = retreatDir;
+                currentMove = -toEnemy.normalized;
             }
-            else if (nearestGem != null && gemDist < 150f && (nearest == null || nearestDist > 200f))
+            else if (hpPct < 0.3f)
             {
-                // Go for gem
-                Vector2 toGem = nearestGem.transform.position - transform.position;
+                currentMove = -toEnemy.normalized;
+            }
+            else if (nearestGem != null && gemDist < attackRange * 2.5f && (nearest == null || nearestDist > attackRange * 2f))
+            {
+                Vector2 toGem = (Vector2)nearestGem.transform.position - (Vector2)transform.position;
                 currentMove = toGem.normalized;
             }
-            else if (dEnemy < controller.GetData().attackRange * 0.6f)
+            else if (dEnemy < attackRange * 0.6f)
             {
-                // Too close, strafe
                 currentMove = new Vector2(-toEnemy.y, toEnemy.x).normalized * moveRandomness;
             }
-            else if (dEnemy > controller.GetData().attackRange * 0.8f)
+            else if (dEnemy > attackRange * 0.85f)
             {
-                // Approach
                 currentMove = toEnemy.normalized;
             }
             else
             {
-                // Hold
                 currentMove = Vector2.zero;
             }
 
-            // Obstacle avoidance using raycast
             RaycastHit2D hit = Physics2D.Raycast(transform.position, currentMove, 2f, LayerMask.GetMask("Obstacles"));
             if (hit.collider != null)
             {
-                // Try to go around
                 Vector2 perp = new Vector2(-currentMove.y, currentMove.x);
                 if (Physics2D.Raycast(transform.position, perp, 1f, LayerMask.GetMask("Obstacles")).collider == null)
                     currentMove = perp;

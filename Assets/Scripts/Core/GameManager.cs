@@ -9,6 +9,12 @@ namespace BogatyriMoba.Core
     {
         public static GameManager Instance { get; private set; }
 
+        private static readonly string[] BotBrawlerKeys =
+        {
+            "Alesha", "Dobrynya", "Ilya", "BabaYaga", "ZmeyGorynych",
+            "Tugarin", "Varvara", "Knyaz", "Konyukh"
+        };
+
         [Header("Game Mode")]
         public GameMode currentGameMode;
 
@@ -29,6 +35,8 @@ namespace BogatyriMoba.Core
 
         [Header("Players")]
         public List<BrawlerController> allPlayers = new List<BrawlerController>();
+        public List<Gem> activeGems = new List<Gem>();
+        public IReadOnlyList<Gem> ActiveGems => activeGems;
         public BrawlerController localPlayer;
 
         [Header("Camera")]
@@ -42,6 +50,7 @@ namespace BogatyriMoba.Core
                 return;
             }
             Instance = this;
+            BrawlerRegistry.Clear();
         }
 
         private void Start()
@@ -55,32 +64,33 @@ namespace BogatyriMoba.Core
 
         public void StartMatch(BrawlerData playerData)
         {
-            // Spawn player
+            if (team1SpawnPoints == null || team1SpawnPoints.Length < 3 ||
+                team2SpawnPoints == null || team2SpawnPoints.Length < 3)
+            {
+                Debug.LogError("GameManager: spawn points are not configured.");
+                return;
+            }
+
             Vector3 spawnPos = team1SpawnPoints[1].position;
             localPlayer = SpawnPlayer(playerData, TEAM_BLUE, spawnPos);
-            cameraFollow.SetTarget(localPlayer.transform);
+            if (localPlayer == null) return;
 
-            // Spawn blue bots
-            var bluePool = new List<string> { "alesha", "dobrynya", "ilya", "babyaga", "zmey", "tugarin", "varvara", "knyaz", "konyukh" };
-            bluePool.Remove(playerData.name.ToLower().Replace(" ", "").Replace("-", ""));
-            
+            if (cameraFollow != null)
+                cameraFollow.SetTarget(localPlayer.transform);
+
+            var botPool = new List<string>(BotBrawlerKeys);
+            botPool.RemoveAll(key => key == playerData.name);
+
             for (int i = 0; i < 2; i++)
-            {
-                string key = bluePool[i % bluePool.Count];
-                SpawnBot(key, TEAM_BLUE, team1SpawnPoints[i == 0 ? 0 : 2].position);
-            }
+                SpawnBot(botPool[i % botPool.Count], TEAM_BLUE, team1SpawnPoints[i == 0 ? 0 : 2].position);
 
-            // Spawn red bots
             for (int i = 0; i < 3; i++)
-            {
-                string key = bluePool[(i + 2) % bluePool.Count];
-                SpawnBot(key, TEAM_RED, team2SpawnPoints[i].position);
-            }
+                SpawnBot(botPool[(i + 2) % botPool.Count], TEAM_RED, team2SpawnPoints[i].position);
 
-            // Spawn initial gems
-            for (int i = 0; i < 3; i++)
+            if (currentGameMode is GemGrabMode)
             {
-                SpawnGem();
+                for (int i = 0; i < 3; i++)
+                    SpawnGem();
             }
 
             if (timerUI != null)
@@ -104,6 +114,7 @@ namespace BogatyriMoba.Core
             controller.OnDeath += () => StartCoroutine(RespawnCoroutine(controller, teamId));
 
             allPlayers.Add(controller);
+            BrawlerRegistry.Register(controller);
             currentGameMode?.RegisterPlayer(controller, teamId);
 
             return controller;
@@ -111,56 +122,54 @@ namespace BogatyriMoba.Core
 
         private void SpawnBot(string brawlerKey, int teamId, Vector3 position)
         {
-            // Load brawler data from Resources or use default
             var data = Resources.Load<BrawlerData>("Brawlers/" + brawlerKey);
             if (data == null)
             {
-                Debug.LogWarning($"Brawler data not found: {brawlerKey}");
+                Debug.LogWarning($"Brawler data not found: Brawlers/{brawlerKey}");
                 return;
             }
 
             var bot = SpawnPlayer(data, teamId, position);
-            if (bot != null)
-            {
-                // Add AI component
-                var ai = bot.gameObject.GetComponent<SimpleBotAI>();
-                if (ai == null)
-                    ai = bot.gameObject.AddComponent<SimpleBotAI>();
-                ai.Initialize(bot);
+            if (bot == null) return;
 
-                // Disable player input for bots
-                var input = bot.GetComponent<PlayerInput>();
-                if (input != null)
-                    input.enabled = false;
-            }
+            var ai = bot.gameObject.GetComponent<SimpleBotAI>();
+            if (ai == null)
+                ai = bot.gameObject.AddComponent<SimpleBotAI>();
+            ai.Initialize(bot);
+
+            var input = bot.GetComponent<PlayerInput>();
+            if (input != null)
+                input.enabled = false;
         }
 
         public void SpawnGem()
         {
             if (gemPrefab == null || gemSpawnParent == null) return;
 
-            Vector3 pos = new Vector3(
-                Random.Range(700f, 1100f),
-                Random.Range(500f, 900f),
-                0f
-            );
+            Vector2 offset = Random.insideUnitCircle * 3f;
+            Vector3 pos = gemSpawnParent.position + new Vector3(offset.x, offset.y, 0f);
 
-            GameObject gem = Instantiate(gemPrefab, pos, Quaternion.identity, gemSpawnParent);
-            var gemComponent = gem.GetComponent<Gem>();
-            if (gemComponent != null)
-                gemComponent.OnCollected += OnGemCollected;
+            GameObject gemObject = Instantiate(gemPrefab, pos, Quaternion.identity, gemSpawnParent);
+            var gemComponent = gemObject.GetComponent<Gem>();
+            if (gemComponent == null) return;
+
+            gemComponent.OnCollected += OnGemCollected;
+            activeGems.Add(gemComponent);
+        }
+
+        public void UnregisterGem(Gem gem)
+        {
+            if (gem != null)
+                activeGems.Remove(gem);
         }
 
         private void OnGemCollected(BrawlerController collector)
         {
-            var gemGrab = currentGameMode as GemGrabMode;
-            if (gemGrab != null)
+            if (currentGameMode is GemGrabMode gemGrab)
             {
                 gemGrab.CollectGem(collector);
+                Invoke(nameof(SpawnGem), 3f);
             }
-
-            // Spawn replacement gem after delay
-            Invoke(nameof(SpawnGem), 3f);
         }
 
         private System.Collections.IEnumerator RespawnCoroutine(BrawlerController player, int teamId)
@@ -189,7 +198,9 @@ namespace BogatyriMoba.Core
             {
                 string blueGems = currentGameMode is GemGrabMode gg ? gg.GetTeamGems(TEAM_BLUE).ToString() : "?";
                 string redGems = currentGameMode is GemGrabMode gg2 ? gg2.GetTeamGems(TEAM_RED).ToString() : "?";
-                resultText.text = won ? $"Синяя команда победила! {blueGems} 💎 vs {redGems} 💎" : $"Красная команда победила! {redGems} 💎 vs {blueGems} 💎";
+                resultText.text = won
+                    ? $"Синяя команда победила! {blueGems} vs {redGems}"
+                    : $"Красная команда победила! {redGems} vs {blueGems}";
             }
         }
 
@@ -197,9 +208,11 @@ namespace BogatyriMoba.Core
         {
             if (currentGameMode != null)
                 currentGameMode.OnMatchEnded -= HandleMatchEnded;
+
+            BrawlerRegistry.Clear();
         }
 
-        private const int TEAM_BLUE = 0;
-        private const int TEAM_RED = 1;
+        public const int TEAM_BLUE = 0;
+        public const int TEAM_RED = 1;
     }
 }

@@ -14,33 +14,21 @@ namespace BogatyriMoba.Core.Ultimates
 
         public override void Activate(BrawlerController owner)
         {
-            Vector2 aimDir = GetAimDirection(owner);
+            Vector2 aimDir = AimHelper.GetAimDirection(owner);
             Vector2 spawnPos = owner.transform.position;
-            
-            GameObject horseObj = Instantiate(horsePrefab, spawnPos, Quaternion.identity);
+
+            GameObject horseObj = Object.Instantiate(horsePrefab, spawnPos, Quaternion.identity);
             var horse = horseObj.GetComponent<HorseProjectile>();
             if (horse != null)
             {
-                horse.Initialize(aimDir, owner, speed, damage, knockback, lifetime);
+                horse.Initialize(aimDir, owner, speed, (int)damage, knockback, lifetime);
             }
             else
             {
-                // Fallback: just move the object if no script attached
                 var rb = horseObj.GetComponent<Rigidbody2D>();
                 if (rb != null) rb.velocity = aimDir * speed;
-                Destroy(horseObj, lifetime);
+                Object.Destroy(horseObj, lifetime);
             }
-        }
-
-        private Vector2 GetAimDirection(BrawlerController owner)
-        {
-            var input = owner.GetComponent<PlayerInput>();
-            if (input != null && input.AimDirection != Vector2.zero)
-                return input.AimDirection.normalized;
-            
-            // Default to facing direction
-            float dirX = owner.transform.localScale.x >= 0 ? 1f : -1f;
-            return new Vector2(dirX, 0f);
         }
     }
 }

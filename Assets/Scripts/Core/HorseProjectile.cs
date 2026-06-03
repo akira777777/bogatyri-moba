@@ -1,4 +1,5 @@
 using UnityEngine;
+using BogatyriMoba.GameModes;
 
 namespace BogatyriMoba.Core
 {
@@ -53,6 +54,14 @@ namespace BogatyriMoba.Core
 
         private void OnTriggerEnter2D(Collider2D other)
         {
+            var safe = other.GetComponent<Safe>();
+            if (safe != null)
+            {
+                if (safe.GetTeamId() != teamId)
+                    safe.TakeDamage(damage);
+                return;
+            }
+
             var enemy = other.GetComponent<BrawlerController>();
             if (enemy != null && enemy.TeamId != teamId && !enemy.IsDead)
             {

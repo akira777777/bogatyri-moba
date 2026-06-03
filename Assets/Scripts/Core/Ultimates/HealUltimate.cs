@@ -6,7 +6,7 @@ namespace BogatyriMoba.Core.Ultimates
     public class HealUltimate : UltimateAbility
     {
         [Header("Heal Settings")]
-        public float radius = 8f;
+        public float radius = 5f;
         public int healAmount = 1500;
         public GameObject healEffectPrefab;
         public GameObject zoneEffectPrefab;
@@ -14,27 +14,25 @@ namespace BogatyriMoba.Core.Ultimates
         public override void Activate(BrawlerController owner)
         {
             Vector2 center = owner.transform.position;
-            
-            // Show zone visual
+
             if (zoneEffectPrefab != null)
             {
-                var zone = Instantiate(zoneEffectPrefab, center, Quaternion.identity);
-                Destroy(zone, 1f);
+                var zone = Object.Instantiate(zoneEffectPrefab, center, Quaternion.identity);
+                Object.Destroy(zone, 1f);
             }
-            
-            Collider2D[] hits = Physics2D.OverlapCircleAll(center, radius);
-            foreach (var hit in hits)
+
+            int hitCount = PhysicsOverlapUtility.OverlapCircle(center, radius);
+            for (int i = 0; i < hitCount; i++)
             {
-                var ally = hit.GetComponent<BrawlerController>();
-                if (ally != null && ally.TeamId == owner.TeamId && !ally.IsDead)
+                var ally = PhysicsOverlapUtility.GetHit(i).GetComponent<BrawlerController>();
+                if (ally == null || ally.TeamId != owner.TeamId || ally.IsDead) continue;
+
+                ally.Heal(healAmount);
+
+                if (healEffectPrefab != null)
                 {
-                    ally.Heal(healAmount);
-                    
-                    if (healEffectPrefab != null)
-                    {
-                        var effect = Instantiate(healEffectPrefab, ally.transform.position, Quaternion.identity);
-                        Destroy(effect, 0.6f);
-                    }
+                    var effect = Object.Instantiate(healEffectPrefab, ally.transform.position, Quaternion.identity);
+                    Object.Destroy(effect, 0.6f);
                 }
             }
         }

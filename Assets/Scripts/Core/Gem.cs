@@ -6,8 +6,7 @@ namespace BogatyriMoba.Core
     {
         [SerializeField] private float bobSpeed = 3f;
         [SerializeField] private float bobAmount = 0.2f;
-        [SerializeField] private float collectRadius = 0.8f;
-        
+
         private Vector3 startPos;
         private float bobOffset;
         public System.Action<BrawlerController> OnCollected;
@@ -27,13 +26,12 @@ namespace BogatyriMoba.Core
         private void OnTriggerEnter2D(Collider2D other)
         {
             var player = other.GetComponent<BrawlerController>();
-            if (player != null && !player.IsDead)
-            {
-                // Transfer gem to player
-                player.ChargeSuper(0); // Just to trigger any effects if needed
-                OnCollected?.Invoke(player);
-                Destroy(gameObject);
-            }
+            if (player == null || player.IsDead) return;
+
+            OnCollected?.Invoke(player);
+            if (GameManager.Instance != null)
+                GameManager.Instance.UnregisterGem(this);
+            Destroy(gameObject);
         }
     }
 }

@@ -2,41 +2,41 @@ using UnityEngine;
 
 namespace BogatyriMoba.Core
 {
+    [DefaultExecutionOrder(100)]
     [RequireComponent(typeof(Rigidbody2D))]
     [RequireComponent(typeof(PlayerInput))]
     public class BrawlerController : MonoBehaviour
     {
+        private const float SpreadAngleRadians = 0.25f;
+        private const float MeleeRadiusMultiplier = 0.65f;
+        private const float AoERadiusMultiplier = 0.85f;
+
         [SerializeField] private BrawlerData data;
         [SerializeField] private Transform projectileSpawnPoint;
         [SerializeField] private GameObject visualContainer;
 
-        // Identity
         public int ActorNumber { get; set; } = -1;
         public int TeamId { get; set; } = 0;
 
-        // State
         public int CurrentHealth { get; private set; }
         public int MaxHealth { get; private set; }
         public int PowerLevel { get; set; } = 1;
-        public int SuperCharge { get; private set; } = 0;
+        public int SuperCharge { get; private set; }
         public bool IsDead { get; private set; }
         public bool HasSuperReady => SuperCharge >= 100;
         public bool IsStunned { get; private set; }
 
-        // Timers
         private float attackCooldownTimer;
         private float superCooldownTimer;
         private float stunTimer;
         private float shieldTimer;
         private int shieldAmount;
 
-        // Components
         private Rigidbody2D rb;
         private PlayerInput input;
         private StealthComponent stealth;
         private BuffComponent buff;
 
-        // Events
         public System.Action OnDeath;
         public System.Action<int, int> OnHealthChanged;
         public System.Action<int> OnSuperChargeChanged;
@@ -46,6 +46,25 @@ namespace BogatyriMoba.Core
         {
             rb = GetComponent<Rigidbody2D>();
             input = GetComponent<PlayerInput>();
+
+            if (visualContainer == null)
+            {
+                var visual = transform.Find("VisualContainer");
+                if (visual != null)
+                    visualContainer = visual;
+            }
+
+            if (projectileSpawnPoint == null && visualContainer != null)
+            {
+                var spawn = visualContainer.Find("ProjectileSpawnPoint");
+                if (spawn != null)
+                    projectileSpawnPoint = spawn;
+            }
+        }
+
+        private void OnDestroy()
+        {
+            BrawlerRegistry.Unregister(this);
         }
 
         private void Start()
@@ -74,11 +93,18 @@ namespace BogatyriMoba.Core
             Initialize(PowerLevel);
         }
 
+        public Vector2 GetFacingDirection()
+        {
+            if (visualContainer != null)
+                return visualContainer.transform.localScale.x < 0 ? Vector2.left : Vector2.right;
+
+            return transform.localScale.x < 0 ? Vector2.left : Vector2.right;
+        }
+
         private void Update()
         {
             if (IsDead) return;
 
-            // Update timers
             if (attackCooldownTimer > 0)
                 attackCooldownTimer -= Time.deltaTime;
             if (superCooldownTimer > 0)
@@ -110,6 +136,8 @@ namespace BogatyriMoba.Core
 
         private void HandleMovement()
         {
+            if (data == null) return;
+
             Vector2 move = input.MoveDirection;
             float speed = data.movementSpeed * GetSpeedMultiplier();
             rb.velocity = move * speed;
@@ -124,8 +152,7 @@ namespace BogatyriMoba.Core
 
         private void HandleAttack()
         {
-            if (!input.AttackPressed) return;
-            if (attackCooldownTimer > 0) return;
+            if (!input.AttackPressed || attackCooldownTimer > 0) return;
 
             PerformAttack();
             input.ClearAttackFlag();
@@ -133,9 +160,7 @@ namespace BogatyriMoba.Core
 
         private void HandleSuper()
         {
-            if (!input.SuperPressed) return;
-            if (!HasSuperReady) return;
-            if (superCooldownTimer > 0) return;
+            if (!input.SuperPressed || !HasSuperReady || superCooldownTimer > 0) return;
 
             PerformSuper();
             input.ClearSuperFlag();
@@ -149,9 +174,66 @@ namespace BogatyriMoba.Core
 
         private void PerformAttack()
         {
+            if (data == null) return;
+
             attackCooldownTimer = data.attackReloadTime;
             int damage = Mathf.RoundToInt(data.GetDamageForPowerLevel(PowerLevel) * GetDamageMultiplier());
-            SpawnProjectile(data.attackProjectilePrefab, damage, data.attackRange, false);
+            Vector2 aimDir = GetAttackDirection();
+
+            switch (data.attackType)
+            {
+                case AttackType.Melee:
+                    PerformMeleeAttack(damage, aimDir);
+                    break;
+                case AttackType.Spread:
+                    PerformSpreadAttack(damage, aimDir);
+                    break;
+                case AttackType.AoE:
+                    PerformAoEAttack(damage, aimDir);
+                    break;
+                default:
+                    SpawnProjectile(data.attackProjectilePrefab, damage, data.attackRange, aimDir, false);
+                    break;
+            }
+        }
+
+        private void PerformMeleeAttack(int damage, Vector2 aimDir)
+        {
+            float radius = data.attackRange * MeleeRadiusMultiplier;
+            Vector2 center = (Vector2)transform.position + aimDir * radius * 0.5f;
+            int hitCount = PhysicsOverlapUtility.OverlapCircle(center, radius);
+            for (int i = 0; i < hitCount; i++)
+            {
+                var enemy = PhysicsOverlapUtility.GetHit(i).GetComponent<BrawlerController>();
+                if (enemy == null || enemy.TeamId == TeamId || enemy.IsDead) continue;
+                enemy.TakeDamage(damage);
+                ChargeSuper(data.superChargePerHit);
+            }
+        }
+
+        private void PerformSpreadAttack(int damage, Vector2 aimDir)
+        {
+            float baseAngle = Mathf.Atan2(aimDir.y, aimDir.x);
+            for (int i = -1; i <= 1; i++)
+            {
+                float angle = baseAngle + i * SpreadAngleRadians;
+                Vector2 dir = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
+                SpawnProjectile(data.attackProjectilePrefab, damage, data.attackRange, dir, false);
+            }
+        }
+
+        private void PerformAoEAttack(int damage, Vector2 aimDir)
+        {
+            float radius = data.attackRange * AoERadiusMultiplier;
+            Vector2 center = (Vector2)transform.position + aimDir * radius;
+            int hitCount = PhysicsOverlapUtility.OverlapCircle(center, radius);
+            for (int i = 0; i < hitCount; i++)
+            {
+                var enemy = PhysicsOverlapUtility.GetHit(i).GetComponent<BrawlerController>();
+                if (enemy == null || enemy.TeamId == TeamId || enemy.IsDead) continue;
+                enemy.TakeDamage(damage);
+                ChargeSuper(data.superChargePerHit);
+            }
         }
 
         private void PerformSuper()
@@ -161,32 +243,29 @@ namespace BogatyriMoba.Core
             OnSuperChargeChanged?.Invoke(SuperCharge);
 
             if (data.ultimateAbility != null)
-            {
                 data.ultimateAbility.Activate(this);
-            }
             else
-            {
-                // Fallback: default projectile super
-                SpawnProjectile(data.superProjectilePrefab, data.superDamage, data.superRange, true);
-            }
+                SpawnProjectile(data.superProjectilePrefab, data.superDamage, data.superRange, GetAttackDirection(), true);
         }
 
-        private void SpawnProjectile(GameObject prefab, int damage, float range, bool isSuper)
+        private Vector2 GetAttackDirection()
+        {
+            Vector2 aimDir = input.AimDirection;
+            if (aimDir.sqrMagnitude < 0.01f)
+                aimDir = GetFacingDirection();
+            return aimDir.normalized;
+        }
+
+        private void SpawnProjectile(GameObject prefab, int damage, float range, Vector2 aimDir, bool isSuper)
         {
             if (prefab == null) return;
 
-            Vector2 aimDir = input.AimDirection;
-            if (aimDir == Vector2.zero)
-                aimDir = visualContainer != null && visualContainer.transform.localScale.x < 0 ? Vector2.left : Vector2.right;
-
-            Vector2 spawnPos = projectileSpawnPoint != null ? projectileSpawnPoint.position : transform.position;
+            Vector2 spawnPos = projectileSpawnPoint != null ? (Vector2)projectileSpawnPoint.position : (Vector2)transform.position;
             GameObject proj = Instantiate(prefab, spawnPos, Quaternion.identity);
-            
+
             var projectile = proj.GetComponent<Projectile>();
             if (projectile != null)
-            {
-                projectile.Initialize(damage, data.projectileSpeed, aimDir, ActorNumber, isSuper, data);
-            }
+                projectile.Initialize(damage, data.projectileSpeed, aimDir, this, isSuper, data);
 
             float travelTime = range / data.projectileSpeed;
             Destroy(proj, travelTime);
@@ -196,7 +275,6 @@ namespace BogatyriMoba.Core
         {
             if (IsDead) return;
 
-            // Shield absorbs damage first
             if (shieldAmount > 0)
             {
                 int absorbed = Mathf.Min(damage, shieldAmount);
@@ -208,7 +286,6 @@ namespace BogatyriMoba.Core
 
             if (damage <= 0) return;
 
-            // Stunned targets take extra damage
             if (IsStunned)
                 damage = Mathf.RoundToInt(damage * 1.2f);
 
@@ -218,9 +295,7 @@ namespace BogatyriMoba.Core
             OnHealthChanged?.Invoke(CurrentHealth, MaxHealth);
 
             if (CurrentHealth <= 0)
-            {
                 Die();
-            }
         }
 
         public void Heal(int amount)
@@ -257,12 +332,12 @@ namespace BogatyriMoba.Core
                 stealth = GetComponent<StealthComponent>();
             if (stealth != null && stealth.IsStealthed)
                 mult *= stealth.SpeedMultiplier;
-            
+
             if (buff == null)
                 buff = GetComponent<BuffComponent>();
             if (buff != null && buff.IsActive)
                 mult *= buff.SpeedMultiplier;
-            
+
             return mult;
         }
 
@@ -273,12 +348,12 @@ namespace BogatyriMoba.Core
                 stealth = GetComponent<StealthComponent>();
             if (stealth != null && stealth.IsStealthed)
                 mult *= stealth.CritMultiplier;
-            
+
             if (buff == null)
                 buff = GetComponent<BuffComponent>();
             if (buff != null && buff.IsActive)
                 mult *= buff.DamageMultiplier;
-            
+
             return mult;
         }
 

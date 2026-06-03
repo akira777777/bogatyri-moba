@@ -136,5 +136,10 @@ namespace BogatyriMoba.GameModes
         {
             return teamGems.ContainsKey(teamId) ? teamGems[teamId] : 0;
         }
+
+        public int GetPlayerGems(BrawlerController player)
+        {
+            return playerGems.ContainsKey(player) ? playerGems[player] : 0;
+        }
     }
 }
