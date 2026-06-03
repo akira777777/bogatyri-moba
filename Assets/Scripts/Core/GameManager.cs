@@ -19,6 +19,12 @@ namespace BogatyriMoba.Core
         [Header("Camera")]
         public CameraFollow cameraFollow;
 
+        [Header("UI")]
+        public MatchHudController matchHud;
+        public MatchTimerUI timerUI;
+        public GameOverUI gameOverUI;
+        public MobileControlsUI mobileControlsUI;
+
         public BrawlerController localPlayer { get; private set; }
         public IReadOnlyList<BrawlerController> AllPlayers =>
             SpawnManager.Instance != null
