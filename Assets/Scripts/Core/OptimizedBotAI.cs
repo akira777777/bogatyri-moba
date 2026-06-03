@@ -45,7 +45,7 @@ namespace BogatyriMoba.Core
         private Transform cachedTransform;
         private float visionRadiusSqr;
         private static SpatialHashGrid _spatialGrid;
-        private static float _gridUpdateTimer;
+        private float _gridUpdateTimer;   // per-instance so bots don't all spike on the same frame
         private const float GridUpdateInterval = 0.5f;
 
         public void Initialize(BrawlerController brawler)
@@ -66,6 +66,9 @@ namespace BogatyriMoba.Core
 
             if (_spatialGrid == null)
                 _spatialGrid = new SpatialHashGrid(4f);
+
+            // Stagger initial update so bots don't all spike on the same frame
+            _gridUpdateTimer = Random.Range(0f, GridUpdateInterval);
         }
 
         private void OnEnable()

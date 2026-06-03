@@ -50,13 +50,17 @@ namespace BogatyriMoba.Core
 
             if (_handlers.TryGetValue(type, out var handler))
             {
-                try
+                // Invoke each subscriber independently so a throwing handler doesn't kill the rest
+                foreach (var invocation in handler.GetInvocationList())
                 {
-                    ((Action<T>)handler)?.Invoke(eventData);
-                }
-                catch (Exception ex)
-                {
-                    Debug.LogError($"[EventBus] Error publishing {type.Name}: {ex}");
+                    try
+                    {
+                        ((Action<T>)invocation).Invoke(eventData);
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.LogError($"[EventBus] Error publishing {type.Name}: {ex}");
+                    }
                 }
             }
 

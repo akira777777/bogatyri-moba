@@ -74,10 +74,11 @@ namespace BogatyriMoba.Core
         public void Release(T item)
         {
             if (item == null) return;
+            if (!item.gameObject.activeSelf) return; // already released
             item.OnPoolRelease();
             item.gameObject.SetActive(false);
             _pool.Enqueue(item);
-            CountActive--;
+            CountActive = Mathf.Max(0, CountActive - 1);
         }
 
         public void ReleaseAll()

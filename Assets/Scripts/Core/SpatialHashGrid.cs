@@ -12,12 +12,15 @@ namespace BogatyriMoba.Core
         private readonly float _cellSize;
         private readonly Dictionary<long, List<BrawlerController>> _grid;
         private readonly HashSet<BrawlerController> _allEntities;
+        // Tracks each entity's last known cell key so UpdateEntity is O(1) instead of O(cells)
+        private readonly Dictionary<BrawlerController, long> _entityCell;
 
         public SpatialHashGrid(float cellSize)
         {
             _cellSize = cellSize;
             _grid = new Dictionary<long, List<BrawlerController>>();
             _allEntities = new HashSet<BrawlerController>();
+            _entityCell = new Dictionary<BrawlerController, long>();
         }
 
         public void Insert(BrawlerController entity)
@@ -31,29 +34,39 @@ namespace BogatyriMoba.Core
         {
             if (entity == null) return;
             _allEntities.Remove(entity);
-            var key = GetKey(entity.transform.position);
-            if (_grid.TryGetValue(key, out var list))
-                list.Remove(entity);
+            if (_entityCell.TryGetValue(entity, out var oldKey))
+            {
+                if (_grid.TryGetValue(oldKey, out var list))
+                    list.Remove(entity);
+                _entityCell.Remove(entity);
+            }
         }
 
         public void UpdateEntity(BrawlerController entity)
         {
             if (entity == null) return;
 
+            var newKey = GetKey(entity.transform.position);
+
+            // Only move the entity if it changed cells
+            if (_entityCell.TryGetValue(entity, out var oldKey) && oldKey == newKey)
+                return;
+
             // Remove from old cell
-            foreach (var kvp in _grid)
+            if (oldKey != 0 || _entityCell.ContainsKey(entity))
             {
-                kvp.Value.Remove(entity);
+                if (_grid.TryGetValue(oldKey, out var oldList))
+                    oldList.Remove(entity);
             }
 
             // Insert into new cell
-            var key = GetKey(entity.transform.position);
-            if (!_grid.TryGetValue(key, out var list))
+            if (!_grid.TryGetValue(newKey, out var newList))
             {
-                list = new List<BrawlerController>();
-                _grid[key] = list;
+                newList = new List<BrawlerController>();
+                _grid[newKey] = newList;
             }
-            list.Add(entity);
+            newList.Add(entity);
+            _entityCell[entity] = newKey;
         }
 
         public List<BrawlerController> Query(Vector2 position, float radius)
@@ -106,6 +119,7 @@ namespace BogatyriMoba.Core
         {
             _grid.Clear();
             _allEntities.Clear();
+            _entityCell.Clear();
         }
 
         private Vector2Int GetCell(Vector2 position)
