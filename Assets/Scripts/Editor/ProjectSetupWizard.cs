@@ -50,6 +50,12 @@ namespace BogatyriMoba.EditorTools
             GUILayout.Label("Богатыри MOBA — Мастер настройки", EditorStyles.boldLabel);
             GUILayout.Space(10);
 
+            if (EditorApplication.isPlayingOrWillChangePlaymode)
+            {
+                EditorGUILayout.HelpBox("Выйдите из режима игры (Play Mode), чтобы редактировать проект.", MessageType.Warning);
+                GUI.enabled = false;
+            }
+
             GUILayout.Label("Этот wizard создаст всё необходимое для запуска:", EditorStyles.wordWrappedLabel);
             GUILayout.Label("• Папки проекта\n• ScriptableObject'ы бойцов и ультимейтов\n• Префабы (Brawler, Gem, Projectile)\n• Сцены Gameplay и Heist\n• Теги и слои", EditorStyles.wordWrappedLabel);
             GUILayout.Space(20);
@@ -77,6 +83,8 @@ namespace BogatyriMoba.EditorTools
             if (GUILayout.Button("ЗАПУСТИТЬ ПОЛНУЮ НАСТРОЙКУ И ИГРУ", GUILayout.Height(40)))
                 FullSetupAndPlay();
             GUI.backgroundColor = Color.white;
+
+            GUI.enabled = true;
         }
 
         private static void RunFullSetup()
@@ -545,6 +553,13 @@ namespace BogatyriMoba.EditorTools
         [MenuItem("Bogatyri/Play Gameplay (Auto Setup + Play)")]
         public static void FullSetupAndPlay()
         {
+            if (EditorApplication.isPlaying)
+            {
+                EditorApplication.isPlaying = false;
+                EditorApplication.delayCall += FullSetupAndPlay;
+                return;
+            }
+
             RunFullSetup();
             string scenePath = "Assets/Scenes/Gameplay.unity";
             if (System.IO.File.Exists(scenePath))
