@@ -15,21 +15,23 @@ namespace BogatyriMoba.EditorTools
         [UnityEditor.InitializeOnLoadMethod]
         static void TryAutoStartFromCLI()
         {
-            string[] args = System.Environment.GetCommandLineArgs();
-            foreach (var a in args)
+            Debug.Log("[AutoStart] TryAutoStartFromCLI invoked.");
+            string scenePath = "Assets/Scenes/Gameplay.unity";
+            if (!System.IO.File.Exists(scenePath))
             {
-                if (a.IndexOf("FullSetupAndPlay", System.StringComparison.OrdinalIgnoreCase) >= 0 ||
-                    a.IndexOf("start-game", System.StringComparison.OrdinalIgnoreCase) >= 0)
+                Debug.Log("[AutoStart] No Gameplay scene found - auto running full setup + play.");
+                UnityEditor.EditorApplication.delayCall += () =>
                 {
-                    UnityEditor.EditorApplication.delayCall += () =>
+                    if (!UnityEditor.EditorApplication.isPlayingOrWillChangePlaymode)
                     {
-                        if (!UnityEditor.EditorApplication.isPlayingOrWillChangePlaymode)
-                        {
-                            FullSetupAndPlay();
-                        }
-                    };
-                    break;
-                }
+                        Debug.Log("[AutoStart] Invoking FullSetupAndPlay from delayCall.");
+                        FullSetupAndPlay();
+                    }
+                };
+            }
+            else
+            {
+                Debug.Log("[AutoStart] Gameplay scene already present.");
             }
         }
 

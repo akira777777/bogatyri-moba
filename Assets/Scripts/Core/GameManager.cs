@@ -20,10 +20,10 @@ namespace BogatyriMoba.Core
         public CameraFollow cameraFollow;
 
         public BrawlerController localPlayer { get; private set; }
-        public List<BrawlerController> allPlayers => SpawnManager.Instance != null 
+        public List<BrawlerController> AllPlayers => SpawnManager.Instance != null 
             ? new List<BrawlerController>(SpawnManager.Instance.AllPlayers) 
             : new List<BrawlerController>();
-        public List<Gem> activeGems => SpawnManager.Instance != null 
+        public List<Gem> ActiveGems => SpawnManager.Instance != null 
             ? new List<Gem>(SpawnManager.Instance.ActiveGems) 
             : new List<Gem>();
 
