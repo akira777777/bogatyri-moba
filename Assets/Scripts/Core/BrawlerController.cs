@@ -13,7 +13,7 @@ namespace BogatyriMoba.Core
 
         [SerializeField] private BrawlerData data;
         [SerializeField] private Transform projectileSpawnPoint;
-        [SerializeField] private GameObject visualContainer;
+        [SerializeField] private Transform visualContainer;
 
         public int ActorNumber { get; set; } = -1;
         public int TeamId { get; set; } = 0;
@@ -169,7 +169,7 @@ namespace BogatyriMoba.Core
         private void HandleGadget()
         {
             if (!input.GadgetPressed) return;
-            input.GadgetPressed = false;
+            input.ClearGadgetFlag();
         }
 
         private void PerformAttack()

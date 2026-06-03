@@ -14,6 +14,7 @@ namespace BogatyriMoba.Core
         private readonly HashSet<BrawlerController> _allEntities;
         // Tracks each entity's last known cell key so UpdateEntity is O(1) instead of O(cells)
         private readonly Dictionary<BrawlerController, long> _entityCell;
+        private readonly List<BrawlerController> _queryResults = new List<BrawlerController>(16);
 
         public SpatialHashGrid(float cellSize)
         {
@@ -71,7 +72,16 @@ namespace BogatyriMoba.Core
 
         public List<BrawlerController> Query(Vector2 position, float radius)
         {
-            var results = new List<BrawlerController>();
+            _queryResults.Clear();
+            QueryInto(position, radius, _queryResults);
+            return _queryResults;
+        }
+
+        public void QueryInto(Vector2 position, float radius, List<BrawlerController> results)
+        {
+            if (results == null) return;
+            results.Clear();
+
             float radiusSqr = radius * radius;
             int cellRadius = Mathf.CeilToInt(radius / _cellSize);
             Vector2Int centerCell = GetCell(position);
@@ -81,34 +91,45 @@ namespace BogatyriMoba.Core
                 for (int y = -cellRadius; y <= cellRadius; y++)
                 {
                     long key = GetKey(centerCell.x + x, centerCell.y + y);
-                    if (_grid.TryGetValue(key, out var list))
+                    if (!_grid.TryGetValue(key, out var list)) continue;
+
+                    for (int i = 0; i < list.Count; i++)
                     {
-                        foreach (var entity in list)
-                        {
-                            if (entity != null && Vector2.SqrMagnitude((Vector2)entity.transform.position - position) <= radiusSqr)
-                                results.Add(entity);
-                        }
+                        var entity = list[i];
+                        if (entity != null && Vector2.SqrMagnitude((Vector2)entity.transform.position - position) <= radiusSqr)
+                            results.Add(entity);
                     }
                 }
             }
-
-            return results;
         }
 
         public BrawlerController FindNearest(Vector2 position, float maxRadius, System.Predicate<BrawlerController> filter = null)
         {
             BrawlerController nearest = null;
-            float nearestDist = float.MaxValue;
-            var candidates = Query(position, maxRadius);
+            float nearestDistSqr = maxRadius * maxRadius;
+            int cellRadius = Mathf.CeilToInt(maxRadius / _cellSize);
+            Vector2Int centerCell = GetCell(position);
 
-            foreach (var entity in candidates)
+            for (int x = -cellRadius; x <= cellRadius; x++)
             {
-                if (filter != null && !filter(entity)) continue;
-                float d = Vector2.SqrMagnitude((Vector2)entity.transform.position - position);
-                if (d < nearestDist)
+                for (int y = -cellRadius; y <= cellRadius; y++)
                 {
-                    nearestDist = d;
-                    nearest = entity;
+                    long key = GetKey(centerCell.x + x, centerCell.y + y);
+                    if (!_grid.TryGetValue(key, out var list)) continue;
+
+                    for (int i = 0; i < list.Count; i++)
+                    {
+                        var entity = list[i];
+                        if (entity == null) continue;
+                        if (filter != null && !filter(entity)) continue;
+
+                        float d = Vector2.SqrMagnitude((Vector2)entity.transform.position - position);
+                        if (d < nearestDistSqr)
+                        {
+                            nearestDistSqr = d;
+                            nearest = entity;
+                        }
+                    }
                 }
             }
 

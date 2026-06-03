@@ -8,6 +8,8 @@ namespace BogatyriMoba.Core
     /// State-machine based AI with optimized spatial queries and tactical decision making.
     /// Uses SpatialHashGrid for O(1) neighbor queries instead of linear search.
     /// </summary>
+    [DefaultExecutionOrder(50)]
+    [RequireComponent(typeof(BrawlerController))]
     public class OptimizedBotAI : MonoBehaviour
     {
         public enum AIState
@@ -145,14 +147,17 @@ namespace BogatyriMoba.Core
 
             if (targetEnemy != null && !targetEnemy.IsDead)
             {
-                float dist = Vector2.Distance(cachedTransform.position, targetEnemy.transform.position);
+                float distSqr = Vector2.SqrMagnitude(
+                    (Vector2)targetEnemy.transform.position - (Vector2)cachedTransform.position);
+                float attackRangeSqr = attackRange * attackRange;
 
-                if (dist <= attackRange * 0.9f)
+                if (distSqr <= attackRangeSqr * 0.81f)
                 {
                     TransitionTo(AIState.Attack);
                     return;
                 }
-                else if (dist <= attackRange * 4f)
+
+                if (distSqr <= attackRangeSqr * 16f)
                 {
                     TransitionTo(AIState.Chase);
                     return;
@@ -160,7 +165,9 @@ namespace BogatyriMoba.Core
             }
 
             // Priority 3: Collect gems if nearby and no immediate threat
-            if (targetGem != null && (targetEnemy == null || Vector2.Distance(cachedTransform.position, targetGem.transform.position) < attackRange * 2f))
+            float collectRangeSqr = attackRange * attackRange * 4f;
+            if (targetGem != null && (targetEnemy == null ||
+                Vector2.SqrMagnitude((Vector2)targetGem.transform.position - (Vector2)cachedTransform.position) < collectRangeSqr))
             {
                 TransitionTo(AIState.CollectGem);
                 return;
@@ -361,19 +368,11 @@ namespace BogatyriMoba.Core
 
         private void FindNearestEnemyFallback()
         {
-            BrawlerController nearest = null;
-            float nearestDist = float.MaxValue;
-
-            foreach (var p in BrawlerRegistry.AllPlayers)
-            {
-                if (p == controller || p.IsDead || p.TeamId == controller.TeamId) continue;
-                float d = Vector2.SqrMagnitude((Vector2)p.transform.position - (Vector2)cachedTransform.position);
-                if (d < nearestDist && d <= visionRadiusSqr)
-                {
-                    nearestDist = d;
-                    nearest = p;
-                }
-            }
+            var nearest = BrawlerRegistry.FindNearestEnemy(
+                cachedTransform.position,
+                visionRadiusSqr,
+                controller,
+                controller.TeamId);
 
             if (nearest != null)
             {

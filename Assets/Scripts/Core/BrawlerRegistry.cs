@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace BogatyriMoba.Core
 {
@@ -28,6 +29,31 @@ namespace BogatyriMoba.Core
                     return Players[i];
             }
             return null;
+        }
+
+        public static BrawlerController FindNearestEnemy(
+            Vector2 from,
+            float maxRadiusSqr,
+            BrawlerController self,
+            int friendlyTeamId)
+        {
+            BrawlerController nearest = null;
+            float nearestDistSqr = maxRadiusSqr;
+
+            for (int i = 0; i < Players.Count; i++)
+            {
+                var p = Players[i];
+                if (p == null || p == self || p.IsDead || p.TeamId == friendlyTeamId) continue;
+
+                float d = Vector2.SqrMagnitude((Vector2)p.transform.position - from);
+                if (d < nearestDistSqr)
+                {
+                    nearestDistSqr = d;
+                    nearest = p;
+                }
+            }
+
+            return nearest;
         }
 
         public static void Clear()
