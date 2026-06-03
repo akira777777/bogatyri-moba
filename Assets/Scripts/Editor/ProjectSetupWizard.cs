@@ -151,8 +151,23 @@ namespace BogatyriMoba.EditorTools
 
             GameObject gemGO = new GameObject("Gem");
             var gemSr = gemGO.AddComponent<SpriteRenderer>();
-            gemSr.sprite = AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/Knob.psd");
-            gemSr.color = Color.green;
+            string gemSpritePath = "Assets/Sprites/Gem.png";
+            if (System.IO.File.Exists(gemSpritePath))
+            {
+                var importer = AssetImporter.GetAtPath(gemSpritePath) as TextureImporter;
+                if (importer != null && importer.textureType != TextureImporterType.Sprite)
+                {
+                    importer.textureType = TextureImporterType.Sprite;
+                    importer.SaveAndReimport();
+                }
+                gemSr.sprite = AssetDatabase.LoadAssetAtPath<Sprite>(gemSpritePath);
+                gemSr.color = Color.white;
+            }
+            else
+            {
+                gemSr.sprite = AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/Knob.psd");
+                gemSr.color = Color.green;
+            }
 
             var gemCol = gemGO.AddComponent<CircleCollider2D>();
             gemCol.radius = 0.3f;
