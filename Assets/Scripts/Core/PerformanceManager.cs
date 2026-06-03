@@ -31,7 +31,8 @@ namespace BogatyriMoba.Core
         private int _frameCount;
         private float _currentFps;
         private QualityTier _currentTier;
-        private readonly Queue<float> _fpsHistory = new Queue<float>();
+        private readonly Queue<float> _fpsHistory = new Queue<float>(FpsHistorySize);
+        private float _fpsSum;
         private const int FpsHistorySize = 10;
 
         [System.Serializable]
@@ -82,8 +83,9 @@ namespace BogatyriMoba.Core
                 _fpsTimer = 0f;
 
                 _fpsHistory.Enqueue(_currentFps);
+                _fpsSum += _currentFps;
                 if (_fpsHistory.Count > FpsHistorySize)
-                    _fpsHistory.Dequeue();
+                    _fpsSum -= _fpsHistory.Dequeue();
 
                 EvaluateQualityAdjustment();
             }
@@ -93,10 +95,7 @@ namespace BogatyriMoba.Core
         {
             if (_fpsHistory.Count < FpsHistorySize) return;
 
-            float avgFps = 0f;
-            foreach (var fps in _fpsHistory)
-                avgFps += fps;
-            avgFps /= _fpsHistory.Count;
+            float avgFps = _fpsSum / _fpsHistory.Count;
 
             if (avgFps < fpsThresholdLow && _currentTier.name != lowTier.name)
             {
