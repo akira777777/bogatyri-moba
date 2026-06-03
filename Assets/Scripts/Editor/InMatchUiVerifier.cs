@@ -35,15 +35,15 @@ namespace BogatyriMoba.EditorTools
 
                 if (ru == key || en == key || string.IsNullOrEmpty(ru) || string.IsNullOrEmpty(en))
                 {
-                    Debug.LogError($"[Verify] Missing localization for key: {key}");
+                    UnityEngine.Debug.LogError($"[Verify] Missing localization for key: {key}");
                     errors++;
                 }
             }
 
             if (errors == 0)
-                Debug.Log("[Verify] In-match UI localization catalog OK (ru + en).");
+                UnityEngine.Debug.Log("[Verify] In-match UI localization catalog OK (ru + en).");
             else
-                Debug.LogError($"[Verify] Failed with {errors} missing keys.");
+                UnityEngine.Debug.LogError($"[Verify] Failed with {errors} missing keys.");
         }
     }
 }

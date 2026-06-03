@@ -11,14 +11,14 @@ namespace BogatyriMoba.EditorTools
         private static void UseRussian()
         {
             LocaleManager.SetLocale(LocaleManager.Russian);
-            Debug.Log("[Locale] Active locale: ru");
+            UnityEngine.Debug.Log("[Locale] Active locale: ru");
         }
 
         [MenuItem("Bogatyri/Locale/Use English (en)")]
         private static void UseEnglish()
         {
             LocaleManager.SetLocale(LocaleManager.English);
-            Debug.Log("[Locale] Active locale: en");
+            UnityEngine.Debug.Log("[Locale] Active locale: en");
         }
     }
 }
