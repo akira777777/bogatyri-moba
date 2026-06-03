@@ -12,7 +12,7 @@ namespace BogatyriMoba.EditorTools
 {
     public class ProjectSetupWizard : EditorWindow
     {
-        [UnityEditor.InitializeOnLoadMethod]
+        // [UnityEditor.InitializeOnLoadMethod]
         static void TryAutoStartFromCLI()
         {
             Debug.Log("[AutoStart] TryAutoStartFromCLI invoked.");
