@@ -27,8 +27,10 @@ namespace BogatyriMoba.Core
             "Tugarin", "Varvara", "Knyaz", "Konyukh"
         };
 
-        private List<BrawlerController> _allPlayers = new List<BrawlerController>();
-        private List<Gem> _activeGems = new List<Gem>();
+        private readonly List<BrawlerController> _allPlayers = new List<BrawlerController>();
+        private readonly List<Gem> _activeGems = new List<Gem>();
+        private readonly Dictionary<string, BrawlerData> _brawlerCache = new Dictionary<string, BrawlerData>();
+
         public IReadOnlyList<BrawlerController> AllPlayers => _allPlayers;
         public IReadOnlyList<Gem> ActiveGems => _activeGems;
 
@@ -82,7 +84,7 @@ namespace BogatyriMoba.Core
 
         public BrawlerController SpawnBot(string brawlerKey, int teamId, Vector3 position)
         {
-            var data = Resources.Load<BrawlerData>("Brawlers/" + brawlerKey);
+            var data = LoadBrawlerData(brawlerKey);
             if (data == null)
             {
                 Debug.LogWarning($"[SpawnManager] Brawler data not found: Brawlers/{brawlerKey}");
@@ -92,9 +94,13 @@ namespace BogatyriMoba.Core
             var bot = SpawnPlayer(data, teamId, position);
             if (bot == null) return null;
 
-            var ai = bot.gameObject.GetComponent<SimpleBotAI>();
+            var legacyAi = bot.GetComponent<SimpleBotAI>();
+            if (legacyAi != null)
+                Destroy(legacyAi);
+
+            var ai = bot.GetComponent<OptimizedBotAI>();
             if (ai == null)
-                ai = bot.gameObject.AddComponent<SimpleBotAI>();
+                ai = bot.AddComponent<OptimizedBotAI>();
             ai.Initialize(bot);
 
             var input = bot.GetComponent<PlayerInput>();
@@ -102,6 +108,17 @@ namespace BogatyriMoba.Core
                 input.enabled = false;
 
             return bot;
+        }
+
+        private BrawlerData LoadBrawlerData(string brawlerKey)
+        {
+            if (_brawlerCache.TryGetValue(brawlerKey, out var cached) && cached != null)
+                return cached;
+
+            var data = Resources.Load<BrawlerData>("Brawlers/" + brawlerKey);
+            if (data != null)
+                _brawlerCache[brawlerKey] = data;
+            return data;
         }
 
         public void SpawnGem()
@@ -142,6 +159,7 @@ namespace BogatyriMoba.Core
             _activeGems.Clear();
 
             BrawlerRegistry.Clear();
+            _brawlerCache.Clear();
             _nextActorNumber = 0;
         }
 

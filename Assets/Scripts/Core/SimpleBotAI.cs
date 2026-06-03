@@ -16,6 +16,7 @@ namespace BogatyriMoba.Core
         private Vector2 currentAim;
         private Vector2 currentMove;
         private BrawlerController target;
+        private int obstacleMask;
 
         public void Initialize(BrawlerController brawler)
         {
@@ -27,6 +28,7 @@ namespace BogatyriMoba.Core
             if (controller == null)
                 controller = GetComponent<BrawlerController>();
             input = GetComponent<PlayerInput>();
+            obstacleMask = LayerMask.GetMask("Obstacles");
         }
 
         private void Update()
@@ -50,36 +52,28 @@ namespace BogatyriMoba.Core
             if (target != null && !target.IsDead)
             {
                 float attackRange = controller.GetData().attackRange;
-                float dist = Vector2.Distance(transform.position, target.transform.position);
-                if (dist <= attackRange && input != null)
+                float distSqr = Vector2.SqrMagnitude((Vector2)target.transform.position - (Vector2)transform.position);
+                if (distSqr <= attackRange * attackRange && input != null)
                 {
                     input.SetAimInput(currentAim);
                     input.OnAttackButtonDown();
                 }
 
-                if (controller.HasSuperReady && dist < controller.GetData().superRange * 1.2f && input != null)
+                float superRange = controller.GetData().superRange * 1.2f;
+                if (controller.HasSuperReady && distSqr <= superRange * superRange && input != null)
                     input.OnSuperButtonDown();
             }
         }
 
         private void Think()
         {
-            BrawlerController nearest = null;
-            float nearestDist = float.MaxValue;
+            target = BrawlerRegistry.FindNearestEnemy(
+                transform.position,
+                float.MaxValue,
+                controller,
+                controller.TeamId);
 
-            foreach (var p in BrawlerRegistry.AllPlayers)
-            {
-                if (p == controller || p.IsDead || p.TeamId == controller.TeamId) continue;
-                float d = Vector2.Distance(transform.position, p.transform.position);
-                if (d < nearestDist)
-                {
-                    nearestDist = d;
-                    nearest = p;
-                }
-            }
-            target = nearest;
-
-            if (nearest == null)
+            if (target == null)
             {
                 currentMove = new Vector2(Random.Range(-1f, 1f), Random.Range(-1f, 1f)).normalized;
                 return;
@@ -87,20 +81,25 @@ namespace BogatyriMoba.Core
 
             Vector2 toEnemy = (Vector2)target.transform.position - (Vector2)transform.position;
             currentAim = toEnemy.normalized;
-            float dEnemy = toEnemy.magnitude;
+            float dEnemySqr = toEnemy.sqrMagnitude;
+            float dEnemy = Mathf.Sqrt(dEnemySqr);
             float attackRange = controller.GetData().attackRange;
 
             Gem nearestGem = null;
-            float gemDist = attackRange * 3f;
-            if (GameManager.Instance != null)
+            float gemDistSqr = attackRange * attackRange * 9f;
+            var gems = SpawnManager.Instance != null
+                ? SpawnManager.Instance.ActiveGems
+                : GameManager.Instance?.ActiveGems;
+            if (gems != null)
             {
-                foreach (var g in GameManager.Instance.ActiveGems)
+                for (int i = 0; i < gems.Count; i++)
                 {
+                    var g = gems[i];
                     if (g == null) continue;
-                    float gd = Vector2.Distance(transform.position, g.transform.position);
-                    if (gd < gemDist)
+                    float gd = Vector2.SqrMagnitude((Vector2)g.transform.position - (Vector2)transform.position);
+                    if (gd < gemDistSqr)
                     {
-                        gemDist = gd;
+                        gemDistSqr = gd;
                         nearestGem = g;
                     }
                 }
@@ -108,7 +107,10 @@ namespace BogatyriMoba.Core
 
             float hpPct = (float)controller.CurrentHealth / controller.MaxHealth;
             bool hasGems = false;
-            if (GameManager.Instance != null && GameManager.Instance.currentGameMode is GemGrabMode gemMode)
+            var mode = MatchManager.Instance != null
+                ? MatchManager.Instance.currentGameMode
+                : GameManager.Instance?.currentGameMode;
+            if (mode is GemGrabMode gemMode)
                 hasGems = gemMode.GetPlayerGems(controller) > 0;
 
             if (hasGems && hpPct < 0.5f)
@@ -119,7 +121,8 @@ namespace BogatyriMoba.Core
             {
                 currentMove = -toEnemy.normalized;
             }
-            else if (nearestGem != null && gemDist < attackRange * 2.5f && (nearest == null || nearestDist > attackRange * 2f))
+            else if (nearestGem != null && gemDistSqr < attackRange * attackRange * 6.25f &&
+                     dEnemySqr > attackRange * attackRange * 4f)
             {
                 Vector2 toGem = (Vector2)nearestGem.transform.position - (Vector2)transform.position;
                 currentMove = toGem.normalized;
@@ -137,11 +140,11 @@ namespace BogatyriMoba.Core
                 currentMove = Vector2.zero;
             }
 
-            RaycastHit2D hit = Physics2D.Raycast(transform.position, currentMove, 2f, LayerMask.GetMask("Obstacles"));
+            RaycastHit2D hit = Physics2D.Raycast(transform.position, currentMove, 2f, obstacleMask);
             if (hit.collider != null)
             {
                 Vector2 perp = new Vector2(-currentMove.y, currentMove.x);
-                if (Physics2D.Raycast(transform.position, perp, 1f, LayerMask.GetMask("Obstacles")).collider == null)
+                if (Physics2D.Raycast(transform.position, perp, 1f, obstacleMask).collider == null)
                     currentMove = perp;
                 else
                     currentMove = -perp;
