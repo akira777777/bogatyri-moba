@@ -261,8 +261,19 @@ namespace BogatyriMoba.Core
             if (prefab == null) return;
 
             Vector2 spawnPos = projectileSpawnPoint != null ? (Vector2)projectileSpawnPoint.position : (Vector2)transform.position;
-            GameObject proj = Instantiate(prefab, spawnPos, Quaternion.identity);
 
+            // Try pooled projectile first
+            var pooled = PoolManager.Instance?.Get<PooledProjectile>("projectile");
+            if (pooled != null)
+            {
+                pooled.transform.position = spawnPos;
+                pooled.transform.rotation = Quaternion.identity;
+                pooled.Initialize(damage, data.projectileSpeed, aimDir, this, isSuper, data);
+                return;
+            }
+
+            // Fallback to instantiate
+            GameObject proj = Instantiate(prefab, spawnPos, Quaternion.identity);
             var projectile = proj.GetComponent<Projectile>();
             if (projectile != null)
                 projectile.Initialize(damage, data.projectileSpeed, aimDir, this, isSuper, data);
@@ -271,7 +282,7 @@ namespace BogatyriMoba.Core
             Destroy(proj, travelTime);
         }
 
-        public void TakeDamage(int damage)
+        public void TakeDamage(int damage, BrawlerController attacker = null)
         {
             if (IsDead) return;
 
@@ -294,8 +305,19 @@ namespace BogatyriMoba.Core
 
             OnHealthChanged?.Invoke(CurrentHealth, MaxHealth);
 
+            if (attacker != null)
+            {
+                EventBus.Publish(new DamageDealtEvent
+                {
+                    Attacker = attacker,
+                    Victim = this,
+                    Damage = damage,
+                    IsSuper = false
+                });
+            }
+
             if (CurrentHealth <= 0)
-                Die();
+                Die(attacker);
         }
 
         public void Heal(int amount)
@@ -308,8 +330,18 @@ namespace BogatyriMoba.Core
         public void ChargeSuper(int amount)
         {
             if (IsDead) return;
+            bool wasReady = HasSuperReady;
             SuperCharge = Mathf.Min(SuperCharge + amount, 100);
             OnSuperChargeChanged?.Invoke(SuperCharge);
+
+            if (!wasReady && HasSuperReady && data?.ultimateAbility != null)
+            {
+                EventBus.Publish(new SuperActivatedEvent
+                {
+                    Player = this,
+                    AbilityName = data.ultimateAbility.abilityName
+                });
+            }
         }
 
         public void ApplyShield(int amount, float duration)
@@ -357,11 +389,19 @@ namespace BogatyriMoba.Core
             return mult;
         }
 
-        private void Die()
+        private void Die(BrawlerController killer = null)
         {
             IsDead = true;
             rb.velocity = Vector2.zero;
             OnDeath?.Invoke();
+
+            EventBus.Publish(new PlayerDeathEvent
+            {
+                Player = this,
+                Killer = killer,
+                TeamId = TeamId
+            });
+
             gameObject.SetActive(false);
         }
 

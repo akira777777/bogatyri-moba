@@ -227,6 +227,15 @@ namespace BogatyriMoba.EditorTools
             var mode = modeGO.AddComponent<GemGrabMode>();
             gm.currentGameMode = mode;
 
+            // New managers
+            var matchManager = gmGO.AddComponent<MatchManager>();
+            matchManager.currentGameMode = mode;
+
+            var spawnManager = gmGO.AddComponent<SpawnManager>();
+            var networkManager = gmGO.AddComponent<NetworkManager>();
+            var poolManager = gmGO.AddComponent<PoolManager>();
+            var perfManager = gmGO.AddComponent<PerformanceManager>();
+
             GameObject blueSpawns = new GameObject("TeamBlueSpawns");
             for (int i = 0; i < 3; i++)
             {
@@ -243,16 +252,16 @@ namespace BogatyriMoba.EditorTools
                 sp.transform.position = new Vector3(12f - i * 2f, -4f + i * 4f, 0f);
             }
 
-            gm.team1SpawnPoints = new Transform[3];
-            gm.team2SpawnPoints = new Transform[3];
+            spawnManager.team1SpawnPoints = new Transform[3];
+            spawnManager.team2SpawnPoints = new Transform[3];
             for (int i = 0; i < 3; i++)
             {
-                gm.team1SpawnPoints[i] = blueSpawns.transform.GetChild(i);
-                gm.team2SpawnPoints[i] = redSpawns.transform.GetChild(i);
+                spawnManager.team1SpawnPoints[i] = blueSpawns.transform.GetChild(i);
+                spawnManager.team2SpawnPoints[i] = redSpawns.transform.GetChild(i);
             }
 
             GameObject gemParent = new GameObject("Gems");
-            gm.gemSpawnParent = gemParent.transform;
+            spawnManager.gemSpawnParent = gemParent.transform;
 
             GameObject obstacles = new GameObject("Obstacles");
             CreateWall(obstacles.transform, new Vector3(0f, 6f, 0f), new Vector3(4f, 0.5f, 1f));
@@ -290,6 +299,15 @@ namespace BogatyriMoba.EditorTools
             mode.modeType = GameModeType.Heist;
             gm.currentGameMode = mode;
 
+            // New managers
+            var matchManager = gmGO.AddComponent<MatchManager>();
+            matchManager.currentGameMode = mode;
+
+            var spawnManager = gmGO.AddComponent<SpawnManager>();
+            var networkManager = gmGO.AddComponent<NetworkManager>();
+            var poolManager = gmGO.AddComponent<PoolManager>();
+            var perfManager = gmGO.AddComponent<PerformanceManager>();
+
             if (System.IO.File.Exists("Assets/Prefabs/Safe.prefab"))
                 mode.safePrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Safe.prefab");
 
@@ -309,12 +327,12 @@ namespace BogatyriMoba.EditorTools
                 sp.transform.position = new Vector3(10f - i * 2f, -3f + i * 3f, 0f);
             }
 
-            gm.team1SpawnPoints = new Transform[3];
-            gm.team2SpawnPoints = new Transform[3];
+            spawnManager.team1SpawnPoints = new Transform[3];
+            spawnManager.team2SpawnPoints = new Transform[3];
             for (int i = 0; i < 3; i++)
             {
-                gm.team1SpawnPoints[i] = blueSpawns.transform.GetChild(i);
-                gm.team2SpawnPoints[i] = redSpawns.transform.GetChild(i);
+                spawnManager.team1SpawnPoints[i] = blueSpawns.transform.GetChild(i);
+                spawnManager.team2SpawnPoints[i] = redSpawns.transform.GetChild(i);
             }
 
             GameObject blueSafePos = new GameObject("BlueSafePosition");
@@ -326,7 +344,7 @@ namespace BogatyriMoba.EditorTools
             mode.redSafePosition = redSafePos.transform;
 
             GameObject gemParent = new GameObject("Gems");
-            gm.gemSpawnParent = gemParent.transform;
+            spawnManager.gemSpawnParent = gemParent.transform;
 
             GameObject obstacles = new GameObject("Obstacles");
             CreateWall(obstacles.transform, new Vector3(0f, 5f, 0f), new Vector3(6f, 0.5f, 1f));
@@ -342,10 +360,13 @@ namespace BogatyriMoba.EditorTools
 
         private static void AssignGameManagerPrefabs(GameManager gm)
         {
+            var spawnManager = gm.GetComponent<SpawnManager>();
+            if (spawnManager == null) spawnManager = gm.gameObject.AddComponent<SpawnManager>();
+
             if (System.IO.File.Exists("Assets/Prefabs/Brawler.prefab"))
-                gm.brawlerPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Brawler.prefab");
+                spawnManager.brawlerPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Brawler.prefab");
             if (System.IO.File.Exists("Assets/Prefabs/Gem.prefab"))
-                gm.gemPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Gem.prefab");
+                spawnManager.gemPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Gem.prefab");
         }
 
         private static void CreateWall(Transform parent, Vector3 position, Vector3 scale)
