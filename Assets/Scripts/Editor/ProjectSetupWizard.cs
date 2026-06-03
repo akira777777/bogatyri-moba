@@ -75,7 +75,7 @@ namespace BogatyriMoba.EditorTools
             GUI.backgroundColor = Color.white;
         }
 
-        private static void RunFullSetup()
+        public static void RunFullSetup()
         {
             CreateFolders();
             CreatePrefabs();
@@ -234,12 +234,24 @@ namespace BogatyriMoba.EditorTools
             Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             scene.name = "Gameplay";
 
-            Camera.main.transform.position = new Vector3(0f, 0f, -10f);
-            Camera.main.orthographic = true;
-            Camera.main.orthographicSize = 8f;
-            Camera.main.backgroundColor = new Color(0.23f, 0.37f, 0.23f);
+            Camera cam;
+            if (Camera.main == null)
+            {
+                var camGO = new GameObject("MainCamera");
+                cam = camGO.AddComponent<Camera>();
+                cam.tag = "MainCamera";
+            }
+            else
+            {
+                cam = Camera.main;
+            }
 
-            var camFollow = Camera.main.gameObject.AddComponent<CameraFollow>();
+            cam.transform.position = new Vector3(0f, 0f, -10f);
+            cam.orthographic = true;
+            cam.orthographicSize = 8f;
+            cam.backgroundColor = new Color(0.23f, 0.37f, 0.23f);
+
+            var camFollow = cam.gameObject.AddComponent<CameraFollow>();
 
             GameObject gmGO = new GameObject("GameManager");
             var gm = gmGO.AddComponent<GameManager>();
@@ -305,12 +317,24 @@ namespace BogatyriMoba.EditorTools
             Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             scene.name = "Heist";
 
-            Camera.main.transform.position = new Vector3(0f, 0f, -10f);
-            Camera.main.orthographic = true;
-            Camera.main.orthographicSize = 8f;
-            Camera.main.backgroundColor = new Color(0.2f, 0.25f, 0.35f);
+            Camera cam;
+            if (Camera.main == null)
+            {
+                var camGO = new GameObject("MainCamera");
+                cam = camGO.AddComponent<Camera>();
+                cam.tag = "MainCamera";
+            }
+            else
+            {
+                cam = Camera.main;
+            }
 
-            var camFollow = Camera.main.gameObject.AddComponent<CameraFollow>();
+            cam.transform.position = new Vector3(0f, 0f, -10f);
+            cam.orthographic = true;
+            cam.orthographicSize = 8f;
+            cam.backgroundColor = new Color(0.2f, 0.25f, 0.35f);
+
+            var camFollow = cam.gameObject.AddComponent<CameraFollow>();
 
             GameObject gmGO = new GameObject("GameManager");
             var gm = gmGO.AddComponent<GameManager>();
