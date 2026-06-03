@@ -12,9 +12,12 @@ namespace BogatyriMoba.EditorTools
 {
     public class ProjectSetupWizard : EditorWindow
     {
-        // [UnityEditor.InitializeOnLoadMethod]
+        [UnityEditor.InitializeOnLoadMethod]
         static void TryAutoStartFromCLI()
         {
+            // Skip in batch mode to prevent OOM crashes during headless compilation
+            if (UnityEngine.Application.isBatchMode) return;
+
             Debug.Log("[AutoStart] TryAutoStartFromCLI invoked.");
             string scenePath = "Assets/Scenes/Gameplay.unity";
             if (!System.IO.File.Exists(scenePath))

@@ -1,132 +1,141 @@
 # Богатыри MOBA — Unity Project
 
-2D MOBA в стиле Brawl Stars на русском фольклоре. 3v3 онлайн-матчи, 2–3 минуты за сессию.
+2D MOBA в стиле Brawl Stars на русском фольклоре. 3v3 матчи, 2–3 минуты за сессию.
 
 ## Стек
 
-- **Движок:** Unity 2022.3 LTS (2D URP рекомендуется)
-- **Сеть:** Photon PUN 2 (устанавливается через Package Manager / Asset Store)
-- **Платформа:** Mobile-first (iOS/Android), PC/Mac для разработки
+- **Движок:** Unity 6 (6000.4.9f1)
+- **Сеть:** Custom NetworkManager (WebSocket-ready, миграция на Netcode for GameObjects / Photon Fusion планируется)
+- **Платформа:** Mobile-first (iOS/Android), PC/Mac/Windows для разработки
 
 ## Быстрый старт
 
 ### 1. Установка Unity
 
 1. Скачайте [Unity Hub](https://unity.com/download)
-2. Установите **Unity 2022.3 LTS** с модулями:
-   - Android Build Support
-   - iOS Build Support (для Mac)
-   - Visual Studio Editor (опционально)
+2. Установите **Unity 6000.4.x** (LTS) с модулями:
+   - Android Build Support (для мобильной сборки)
+   - iOS Build Support (Mac, опционально)
+3. Убедитесь, что установлен **TextMeshPro** (входит в Unity 6 по умолчанию)
 
-### 2. Создание проекта
+### 2. Открытие проекта
 
-1. В Unity Hub нажмите **New Project**
-2. Выберите шаблон **2D (URP)** или **2D Built-in**
-3. Назовите проект `BogatyriMoba`
-4. Скопируйте содержимое папки `BogatyriMoba/Assets/` из этого репозитория в папку `Assets/` вашего проекта
+1. В Unity Hub нажмите **Open** → выберите корневую папку `bogatyri-moba`
+2. Unity импортирует проект (~1–2 минуты)
+3. При запросе импортируйте **TMP Essential Resources** (Window → TextMeshPro → Import TMP Essential Resources)
 
-### 3. Установка Photon PUN 2
+### 3. Автоматическая настройка
 
-1. Откройте **Window → Package Manager**
-2. Нажмите **+ → Add package from git URL...**
-3. Введите: `https://github.com/Unity-Technologies/com.unity.multiplayer.mlapi.git` (или установите через Asset Store)
-4. **Важно:** для простоты MVP используйте **Photon PUN 2 Free** из Asset Store
-5. Создайте App ID на [photonengine.com](https://dashboard.photonengine.com)
-6. Вставьте App ID в `PhotonServerSettings` (Window → Photon → Highlight Server Settings)
+При первом открытии проект автоматически запустит **полную настройку** (ProjectSetupWizard), которая создаст:
+- Папки проекта (`Prefabs`, `Scenes`, `ScriptableObjects`, и т.д.)
+- ScriptableObject'ы 9 бойцов и 9 ультимейтов
+- Префабы (Brawler, Gem, Projectile, HorseProjectile, Wall, Safe)
+- Сцены Gameplay (Gem Grab) и Heist
+- Canvas с HUD (таймер, счёт, game-over, мобильные контролы)
+- Слой Obstacles
 
-### 4. Генерация данных бойцов
+Если автозапуск не сработал, выберите в меню: **Bogatyri → Setup Project (Full Setup)**.
 
-1. В Unity меню выберите **Bogatyri → Generate All Brawler Data**
-2. Это создаст:
-   - 9 ScriptableObject'ов бойцов в `Assets/ScriptableObjects/Brawlers/`
-   - 9 ScriptableObject'ов ультимейтов в `Assets/ScriptableObjects/Ultimates/`
+### 4. Запуск
 
-### 5. Настройка сцены
+1. Откройте сцену `Assets/Scenes/Gameplay.unity`
+2. Нажмите **Play ▶** — матч стартует автоматически
 
-1. Создайте сцену `Gameplay`
-2. Добавьте пустой объект `GameManager` с компонентом `GameManager`
-3. Добавьте пустой объект `GameMode` с компонентом `GemGrabMode`
-4. Настройте Spawn Points (минимум 3 на команду)
-5. Создайте префаб `Brawler`:
-   - Добавьте `SpriteRenderer`, `Rigidbody2D`, `CircleCollider2D`
-   - Добавьте `BrawlerController`, `PlayerInput`
-   - Добавьте `ProjectileSpawnPoint` (пустой объект-потомок)
-   - Сохраните как префаб в `Assets/Prefabs/`
-6. Создайте префаб `Gem`:
-   - Добавьте `SpriteRenderer`, `CircleCollider2D` (isTrigger)
-   - Добавьте `Gem`
-   - Сохраните как префаб
-7. Создайте префабы для ультимейтов (конь, стена, эффекты) или используйте placeholder'ы
-8. Назначьте все префабы в `GameManager`
-
-### 6. Настройка слоёв (Layers)
-
-1. Создайте слой **Obstacles** в Edit → Project Settings → Tags and Layers
-2. Назначьте все стены и препятствия на слой Obstacles
-3. Убедитесь, что `Projectile` проверяет столкновения с этим слоем
+Или используйте: **Bogatyri → Play Gameplay (Auto Setup + Play)**.
 
 ## Архитектура
 
-### ScriptableObject архитектура
+### Data-driven дизайн
 
-- **BrawlerData** — хранит статы, роли, ссылки на префабы и **UltimateAbility**
-- **UltimateAbility** — абстрактный базовый класс для всех ультимейтов
-- Каждый боец имеет уникальный ультимейт, создаваемый через `CreateAssetMenu`
+- **BrawlerData** (ScriptableObject) — статы, роль, ссылки на префабы и **UltimateAbility**
+- **UltimateAbility** — абстрактный базовый класс, каждый ультимейт — отдельный SO
+- **UITheme** (ScriptableObject) — цвета, шрифты, safe area для UI
 
 ### Ключевые системы
 
 | Скрипт | Назначение |
 |--------|-----------|
-| `BrawlerController` | Движение, атака, получение урона, щит, оглушение, стелс, баффы |
-| `PlayerInput` | Ввод с клавиатуры/джойстика (WASD + мышь для ПК) |
-| `SimpleBotAI` | AI ботов: поиск врагов, сбор гемов, обход препятствий |
-| `GameManager` | Спавн игроков, управление матчем, камера |
-| `GemGrabMode` | Логика Gem Grab: гемы, счёт, победа при 10 гемах |
-| `Projectile` | Снаряды с поддержкой piercing (пробивание) |
-| `HorseProjectile` | Логика коня-ультимейта |
-| `WallObject` | Временная стена с коллайдером |
-| `StealthComponent` | Невидимость + скорость + крит |
-| `BuffComponent` | Временный бафф скорости/урона |
-| `FireBreathZone` | Зона огненного дыхания |
+| `GameManager` | Singleton-координатор: запуск матча, камера, UI-ссылки |
+| `MatchManager` | Жизненный цикл матча: старт, конец, таймер, счёт |
+| `SpawnManager` | Спавн игроков, ботов, гемов с пулингом |
+| `EventBus` | Type-safe шина событий для decoupled коммуникации |
+| `BrawlerController` | Движение, атака, HP, щит, оглушение, стелс, баффы |
+| `PlayerInput` | Ввод (WASD + мышь для ПК, touch через MobileControlsUI) |
+| `OptimizedBotAI` | AI ботов: поиск врагов, сбор гемов, обход препятствий |
+| `GemGrabMode` | Режим Gem Grab: гемы, счёт, победа при 10 гемах |
+| `HeistMode` | Режим Heist: атака/защита сейфов |
+| `SpatialHashGrid` | Пространственное хеширование для оптимизации overlap-запросов |
+| `ObjectPool` / `PoolManager` | Пулинг объектов для снарядов и эффектов |
+| `PerformanceManager` | Мониторинг FPS, адаптивное качество |
+| `NetworkManager` | Сетевой менеджер (WebSocket, placeholder для multiplayer) |
+| `SaveSystem` | Сохранение прогресса (PlayerPrefs) |
+
+### UI система
+
+| Скрипт | Назначение |
+|--------|-----------|
+| `MatchHudController` | Контроллер HUD: биндинг к режиму игры |
+| `MatchTimerUI` | Отображение таймера матча |
+| `TeamScoreUI` | Счёт команд (Gem Grab) |
+| `HeistSafeHudUI` | HP сейфов (Heist) |
+| `GameOverUI` | Экран конца матча (победа/поражение/ничья) |
+| `MobileControlsUI` | Мобильные контролы (джойстики + кнопки) |
+| `VirtualJoystick` | Виртуальный джойстик с drag-событиями |
+| `UIHealthBar` / `WorldHealthBarFactory` | HP-бары над персонажами |
+
+### Локализация
+
+- `LocaleManager` — управление текущим языком (RU/EN), сохранение в PlayerPrefs
+- `LocalizationCatalog` — каталог строк RU/EN для in-match UI
+- `LocalizedUI` — хелпер для получения локализованных строк
+- Смена языка в редакторе: **Bogatyri → Locale → Use Russian / English**
+
+### Editor Tools
+
+| Инструмент | Меню | Назначение |
+|-----------|------|-----------|
+| `ProjectSetupWizard` | Bogatyri → Setup Project | Полная настройка проекта (папки, префабы, сцены) |
+| `BrawlerDataFactory` | (через wizard) | Генерация 9 бойцов и ультимейтов |
+| `UiHudBuilder` | (через wizard) | Создание Canvas с HUD |
+| `InMatchUiVerifier` | Bogatyri → Verify In-Match UI | Проверка полноты локализации |
+| `LocaleDebugMenu` | Bogatyri → Locale | Переключение языка |
 
 ### Уникальные ультимейты (9 штук)
 
 | Боец | Ультимейт | Класс |
 |------|-----------|-------|
-| Алёша | Конь-огонь | `HorseUltimate` |
-| Добрыня | Медвежий рёв | `RoarUltimate` |
-| Илья | Соколиный взгляд | `SnipeUltimate` |
+| Алёша Попович | Конь-огонь | `HorseUltimate` |
+| Добрыня Никитич | Медвежий рёв | `RoarUltimate` |
+| Илья Муромец | Соколиный взгляд | `SnipeUltimate` |
 | Баба Яга | Избушка | `WallUltimate` |
 | Змей Горыныч | Огненное дыхание | `FireBreathUltimate` |
-| Тугарин | Дымовая завеса | `SmokeUltimate` |
-| Варвара | Живая вода | `HealUltimate` |
-| Князь | Золотой стяг | `BuffUltimate` |
-| Конюх | Табун | `StampedeUltimate` |
+| Тугарин Змей | Дымовая завеса | `SmokeUltimate` |
+| Варвара Краса | Живая вода | `HealUltimate` |
+| Князь Владимир | Золотой стяг | `BuffUltimate` |
+| Конюх Сивка | Табун | `StampedeUltimate` |
 
-## In-match UI и локализация
+### Assembly Definitions
 
-После копирования скриптов в Unity:
-
-1. Установите пакеты из `Packages/manifest.json` (TextMesh Pro, Localization, Addressables).
-2. Импортируйте TMP Essential Resources при первом запуске (`Window → TextMeshPro → Import TMP Essential Resources`).
-3. Запустите **Bogatyri → Setup Project (Full Setup)** — создаёт Canvas с таймером, счётом кристаллов, game-over, мобильными стиками и `DefaultUITheme`.
-4. Смена языка в редакторе: **Bogatyri → Locale → Use Russian / English** (сохраняется в `PlayerPrefs`).
-
-Строки RU/EN для матча: `Assets/Scripts/Localization/LocalizationCatalog.cs`. Стиль: `Docs/UIStyleGuide.md`.
+| Сборка | Содержимое |
+|--------|-----------|
+| `BogatyriMoba` | Core, UI, GameModes, Localization, Networking |
+| `BogatyriMoba.Editor` | Editor tools (зависит от BogatyriMoba) |
 
 ## Roadmap
 
 ### MVP (8–10 недель)
 
-- [x] Базовая архитектура (ScriptableObject, State Machine)
+- [x] Базовая архитектура (ScriptableObject, EventBus, SpatialHashGrid)
 - [x] 9 бойцов с уникальными ультимейтами
 - [x] Gem Grab режим
-- [x] Heist режим (базовая реализация)
-- [x] AI ботов
+- [x] Heist режим
+- [x] AI ботов (OptimizedBotAI)
 - [x] In-match HUD (таймер, счёт, game-over, HP-бары)
 - [x] Локализация RU/EN (in-match)
 - [x] Мобильный UI (джойстики + кнопки, Android/iOS)
-- [ ] Photon PUN 2 интеграция
+- [x] Object pooling + performance manager
+- [x] Editor tools (автоматическая настройка проекта)
+- [ ] Netcode for GameObjects / Photon Fusion интеграция
 - [ ] Серверная валидация
 - [ ] Power Level 1–5
 - [ ] Trophy Road

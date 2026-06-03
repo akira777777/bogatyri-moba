@@ -212,7 +212,7 @@ namespace BogatyriMoba.EditorTools
             var bodyTmp = bodyGo.AddComponent<TextMeshProUGUI>();
             bodyTmp.fontSize = theme != null ? theme.gameOverBodyFontSize : 22;
             bodyTmp.alignment = TextAlignmentOptions.Center;
-            bodyTmp.enableWordWrapping = true;
+            bodyTmp.textWrappingMode = TextWrappingModes.Normal;
 
             var buttonGo = CreateRectChild(box.transform, "PlayAgainButton");
             var buttonRect = buttonGo.GetComponent<RectTransform>();
