@@ -6,7 +6,7 @@ namespace BogatyriMoba.Core
 {
     /// <summary>
     /// State-machine based AI with optimized spatial queries and tactical decision making.
-    /// Replaces SimpleBotAI for better performance and smarter behavior.
+    /// Uses SpatialHashGrid for O(1) neighbor queries instead of linear search.
     /// </summary>
     public class OptimizedBotAI : MonoBehaviour
     {
@@ -24,6 +24,7 @@ namespace BogatyriMoba.Core
         [SerializeField] private float reactionTime = 0.3f;
         [SerializeField] private float stateUpdateInterval = 0.2f;
         [SerializeField] private float memoryDuration = 3f;
+        [SerializeField] private float visionRadius = 12f;
         [SerializeField] private LayerMask obstacleMask;
 
         private BrawlerController controller;
@@ -40,14 +41,18 @@ namespace BogatyriMoba.Core
         private float lastTargetSeenTime;
         private Vector2 lastKnownEnemyPos;
 
-        // Optimization: cached transforms
+        // Optimization
         private Transform cachedTransform;
-        private static readonly Collider2D[] OverlapBuffer = new Collider2D[16];
+        private float visionRadiusSqr;
+        private static SpatialHashGrid _spatialGrid;
+        private static float _gridUpdateTimer;
+        private const float GridUpdateInterval = 0.5f;
 
         public void Initialize(BrawlerController brawler)
         {
             controller = brawler;
             cachedTransform = transform;
+            visionRadiusSqr = visionRadius * visionRadius;
         }
 
         private void Awake()
@@ -57,11 +62,35 @@ namespace BogatyriMoba.Core
             input = GetComponent<PlayerInput>();
             cachedTransform = transform;
             obstacleMask = LayerMask.GetMask("Obstacles");
+            visionRadiusSqr = visionRadius * visionRadius;
+
+            if (_spatialGrid == null)
+                _spatialGrid = new SpatialHashGrid(4f);
+        }
+
+        private void OnEnable()
+        {
+            if (controller != null)
+                _spatialGrid?.Insert(controller);
+        }
+
+        private void OnDisable()
+        {
+            if (controller != null)
+                _spatialGrid?.Remove(controller);
         }
 
         private void Update()
         {
             if (controller == null || controller.IsDead) return;
+
+            // Update spatial grid periodically
+            _gridUpdateTimer -= Time.deltaTime;
+            if (_gridUpdateTimer <= 0f)
+            {
+                _gridUpdateTimer = GridUpdateInterval;
+                _spatialGrid?.UpdateEntity(controller);
+            }
 
             stateTimer -= Time.deltaTime;
             reactionTimer -= Time.deltaTime;
@@ -105,8 +134,8 @@ namespace BogatyriMoba.Core
                 return;
             }
 
-            // Find nearest enemy
-            FindNearestEnemy();
+            // Find targets using spatial grid
+            FindNearestEnemyOptimized();
             FindNearestGem();
 
             float attackRange = data.attackRange;
@@ -260,11 +289,13 @@ namespace BogatyriMoba.Core
 
         private Vector2 NavigateAroundObstacles(Vector2 desiredDir)
         {
+            if (desiredDir.sqrMagnitude < 0.001f) return desiredDir;
+
             RaycastHit2D hit = Physics2D.Raycast(cachedTransform.position, desiredDir, 1.5f, obstacleMask);
             if (hit.collider == null) return desiredDir;
 
             // Try left and right
-            Vector2 left = new Vector2(-desiredDir.y, desiredDir.x);
+            Vector2 left = new Vector2(-desiredDir.y, desiredDir.x).normalized;
             Vector2 right = -left;
 
             bool leftClear = Physics2D.Raycast(cachedTransform.position, left, 1.5f, obstacleMask).collider == null;
@@ -299,7 +330,33 @@ namespace BogatyriMoba.Core
                 input.SetAimInput(currentAim);
         }
 
-        private void FindNearestEnemy()
+        private void FindNearestEnemyOptimized()
+        {
+            if (_spatialGrid == null)
+            {
+                FindNearestEnemyFallback();
+                return;
+            }
+
+            var nearest = _spatialGrid.FindNearest(
+                cachedTransform.position,
+                visionRadius,
+                p => p != controller && !p.IsDead && p.TeamId != controller.TeamId
+            );
+
+            if (nearest != null)
+            {
+                targetEnemy = nearest;
+                lastKnownEnemyPos = nearest.transform.position;
+                lastTargetSeenTime = Time.time;
+            }
+            else if (Time.time - lastTargetSeenTime > memoryDuration)
+            {
+                targetEnemy = null;
+            }
+        }
+
+        private void FindNearestEnemyFallback()
         {
             BrawlerController nearest = null;
             float nearestDist = float.MaxValue;
@@ -308,7 +365,7 @@ namespace BogatyriMoba.Core
             {
                 if (p == controller || p.IsDead || p.TeamId == controller.TeamId) continue;
                 float d = Vector2.SqrMagnitude((Vector2)p.transform.position - (Vector2)cachedTransform.position);
-                if (d < nearestDist)
+                if (d < nearestDist && d <= visionRadiusSqr)
                 {
                     nearestDist = d;
                     nearest = p;
@@ -360,6 +417,12 @@ namespace BogatyriMoba.Core
         {
             if (currentState == newState) return;
             currentState = newState;
+        }
+
+        private void OnDestroy()
+        {
+            if (controller != null)
+                _spatialGrid?.Remove(controller);
         }
     }
 }
