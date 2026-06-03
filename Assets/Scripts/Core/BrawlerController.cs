@@ -97,6 +97,7 @@ namespace BogatyriMoba.Core
             IsStunned = false;
             SuperCharge = 0;
             OnSuperChargeChanged?.Invoke(SuperCharge);
+            UpdateTeamVisuals();
         }
 
         public void SetData(BrawlerData brawlerData)
