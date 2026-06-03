@@ -166,7 +166,7 @@ namespace BogatyriMoba.EditorTools
 
             var projRb = projectileGO.AddComponent<Rigidbody2D>();
             projRb.gravityScale = 0f;
-            projRb.isKinematic = true;
+            projRb.bodyType = RigidbodyType2D.Kinematic;
 
             var projCol = projectileGO.AddComponent<CircleCollider2D>();
             projCol.radius = 0.15f;
