@@ -187,6 +187,19 @@ namespace BogatyriMoba.EditorTools
             asset.attackProjectilePrefab = projectilePrefab;
             asset.superProjectilePrefab = projectilePrefab;
 
+            // Load custom sprite if available
+            string spritePath = "Assets/Sprites/" + fileName + ".png";
+            if (System.IO.File.Exists(spritePath))
+            {
+                var importer = AssetImporter.GetAtPath(spritePath) as TextureImporter;
+                if (importer != null && importer.textureType != TextureImporterType.Sprite)
+                {
+                    importer.textureType = TextureImporterType.Sprite;
+                    importer.SaveAndReimport();
+                }
+                asset.icon = AssetDatabase.LoadAssetAtPath<Sprite>(spritePath);
+            }
+
             if (AssetDatabase.LoadAssetAtPath<BrawlerData>(fullPath) == null)
                 AssetDatabase.CreateAsset(asset, fullPath);
             else

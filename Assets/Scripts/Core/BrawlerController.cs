@@ -424,14 +424,20 @@ namespace BogatyriMoba.Core
             if (sr == null) sr = GetComponentInChildren<SpriteRenderer>();
             if (sr != null)
             {
-                // Set color: blue for Team 0 (Blue), red for Team 1 (Red)
-                sr.color = (_teamId == 0) ? new Color(0.2f, 0.6f, 1f) : new Color(1f, 0.3f, 0.3f);
-                
-                // Replace default white square with round Knob disc
-                var knob = Resources.GetBuiltinResource<Sprite>("UI/Skin/Knob.psd");
-                if (knob != null)
+                if (data != null && data.icon != null)
                 {
-                    sr.sprite = knob;
+                    sr.sprite = data.icon;
+                    sr.color = Color.white; // display beautiful artwork in full color
+                }
+                else
+                {
+                    // Fallback to color-coded circle disc
+                    sr.color = (_teamId == 0) ? new Color(0.2f, 0.6f, 1f) : new Color(1f, 0.3f, 0.3f);
+                    var knob = Resources.GetBuiltinResource<Sprite>("UI/Skin/Knob.psd");
+                    if (knob != null)
+                    {
+                        sr.sprite = knob;
+                    }
                 }
             }
         }
