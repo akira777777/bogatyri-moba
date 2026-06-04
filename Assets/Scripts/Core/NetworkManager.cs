@@ -1,33 +1,29 @@
 using UnityEngine;
-using System.Collections.Generic;
+using BogatyriMoba.Core.Networking;
 
 namespace BogatyriMoba.Core
 {
     /// <summary>
-    /// Network abstraction layer for Photon PUN 2.
-    /// Handles connection, room management, player instantiation, and RPC validation.
+    /// Thin adapter over INetworkService. Preserves Instance for backward compatibility
+    /// while delegating all transport logic to an injectable INetworkService.
     /// </summary>
     public class NetworkManager : MonoBehaviour
     {
         public static NetworkManager Instance { get; private set; }
 
-        [Header("Photon Settings")]
+        [Header("Network Settings")]
         public string gameVersion = "1.0";
         public byte maxPlayersPerRoom = 6;
+        [Tooltip("If true, uses offline (single-player) network service.")]
+        public bool useOfflineMode = true;
 
-        [Header("Prefabs")]
-        public GameObject networkedBrawlerPrefab;
+        public bool IsConnected => _service?.IsConnected ?? false;
+        public bool IsInRoom => _service?.IsInRoom ?? false;
+        public bool IsMasterClient => _service?.IsServer ?? true;
 
-        public bool IsConnected => _isConnected;
-        public bool IsInRoom => _isInRoom;
-        public bool IsMasterClient => _isMasterClient;
+        private INetworkService _service;
 
-        private bool _isConnected;
-        private bool _isInRoom;
-        private bool _isMasterClient;
-        private Dictionary<int, BrawlerController> _networkedPlayers = new Dictionary<int, BrawlerController>();
-
-        // Events
+        // Legacy events (preserved for backward compatibility)
         public System.Action OnConnectedToMaster;
         public System.Action OnJoinedRoom;
         public System.Action OnLeftRoom;
@@ -43,198 +39,99 @@ namespace BogatyriMoba.Core
             }
             Instance = this;
             DontDestroyOnLoad(gameObject);
-        }
 
-        #region Connection
-
-        public void Connect()
-        {
-            if (_isConnected) return;
-
-            Debug.Log("[NetworkManager] Connecting to Photon...");
-            // PhotonNetwork.GameVersion = gameVersion;
-            // PhotonNetwork.ConnectUsingSettings();
-
-            // Stub for compilation without Photon DLL
-            SimulateConnection();
-        }
-
-        public void Disconnect()
-        {
-            // PhotonNetwork.Disconnect();
-            _isConnected = false;
-            _isInRoom = false;
-        }
-
-        private void SimulateConnection()
-        {
-            // Offline fallback for testing without Photon
-            _isConnected = true;
-            OnConnectedToMaster?.Invoke();
-            Debug.Log("[NetworkManager] Connected (offline mode).");
-        }
-
-        #endregion
-
-        #region Room Management
-
-        public void CreateRoom(string roomName, byte? maxPlayers = null)
-        {
-            if (!_isConnected)
+            // Resolve or create network service
+            _service = GameServices.Get<INetworkService>();
+            if (_service == null)
             {
-                Debug.LogWarning("[NetworkManager] Not connected!");
-                return;
+                var spawnService = GameServices.Get<ISpawnService>();
+                _service = useOfflineMode
+                    ? new OfflineNetworkService(spawnService)
+                    : new NetcodeNetworkService(spawnService);
+                GameServices.Register(_service);
             }
 
-            byte players = maxPlayers ?? maxPlayersPerRoom;
-            Debug.Log($"[NetworkManager] Creating room: {roomName} (max {players} players)");
-            // PhotonNetwork.CreateRoom(roomName, new RoomOptions { MaxPlayers = players });
-
-            // Offline simulation
-            _isInRoom = true;
-            _isMasterClient = true;
-            OnJoinedRoom?.Invoke();
+            WireEvents();
         }
 
-        public void JoinRoom(string roomName)
+        private void WireEvents()
         {
-            if (!_isConnected) return;
-            Debug.Log($"[NetworkManager] Joining room: {roomName}");
-            // PhotonNetwork.JoinRoom(roomName);
-
-            _isInRoom = true;
-            _isMasterClient = false;
-            OnJoinedRoom?.Invoke();
+            _service.OnConnectedToMaster += () => OnConnectedToMaster?.Invoke();
+            _service.OnJoinedRoom      += () => OnJoinedRoom?.Invoke();
+            _service.OnLeftRoom        += () => OnLeftRoom?.Invoke();
+            _service.OnPlayerEnteredRoom += id => OnPlayerEnteredRoom?.Invoke(id);
+            _service.OnPlayerLeftRoom    += id => OnPlayerLeftRoom?.Invoke(id);
         }
 
-        public void JoinRandomRoom()
-        {
-            if (!_isConnected) return;
-            Debug.Log("[NetworkManager] Joining random room...");
-            // PhotonNetwork.JoinRandomRoom();
+        #region Connection & Room (delegated)
 
-            _isInRoom = true;
-            _isMasterClient = false;
-            OnJoinedRoom?.Invoke();
-        }
-
-        public void LeaveRoom()
-        {
-            if (!_isInRoom) return;
-            // PhotonNetwork.LeaveRoom();
-            _isInRoom = false;
-            _isMasterClient = false;
-            OnLeftRoom?.Invoke();
-        }
+        public void Connect() => _service?.Connect();
+        public void Disconnect() => _service?.Disconnect();
+        public void CreateRoom(string roomName, byte? maxPlayers = null) => _service?.CreateRoom(roomName, maxPlayers);
+        public void JoinRoom(string roomName) => _service?.JoinRoom(roomName);
+        public void JoinRandomRoom() => _service?.JoinRandomRoom();
+        public void LeaveRoom() => _service?.LeaveRoom();
 
         #endregion
 
-        #region Player Spawning
+        #region Spawning
 
         public void SpawnNetworkedPlayer(BrawlerData data, int teamId, Vector3 position)
         {
-            if (!_isInRoom)
-            {
-                Debug.LogWarning("[NetworkManager] Not in room, spawning local only.");
-                SpawnLocalPlayer(data, teamId, position);
-                return;
-            }
-
-            // PhotonNetwork.Instantiate(networkedBrawlerPrefab.name, position, Quaternion.identity);
-            // For now, local spawn with network component stub
-            var player = SpawnLocalPlayer(data, teamId, position);
-            if (player != null)
-            {
-                // int actorNumber = PhotonNetwork.LocalPlayer.ActorNumber;
-                // player.ActorNumber = actorNumber;
-                // _networkedPlayers[actorNumber] = player;
-            }
-        }
-
-        private BrawlerController SpawnLocalPlayer(BrawlerData data, int teamId, Vector3 position)
-        {
-            if (SpawnManager.Instance != null)
-            {
-                return SpawnManager.Instance.SpawnPlayer(data, teamId, position);
-            }
-            return null;
+            _service?.SpawnPlayer(data, teamId, position);
         }
 
         #endregion
 
-        #region RPC Validation (Server Authority)
+        #region Game Actions
 
         /// <summary>
-        /// Validates if an RPC call is legitimate from the sender.
-        /// Prevents cheating by verifying sender identity and state.
+        /// Broadcasts a game action through the network abstraction.
         /// </summary>
-        public bool ValidateDamageRPC(int attackerActorNumber, int victimActorNumber, int damage)
-        {
-            if (!_networkedPlayers.TryGetValue(attackerActorNumber, out var attacker))
-                return false;
-            if (!_networkedPlayers.TryGetValue(victimActorNumber, out var victim))
-                return false;
-            if (attacker.IsDead || victim.IsDead)
-                return false;
-            if (attacker.TeamId == victim.TeamId)
-                return false;
-            if (damage < 0 || damage > 5000)
-                return false;
-
-            float dist = Vector2.Distance(attacker.transform.position, victim.transform.position);
-            float maxRange = attacker.GetData().attackRange * 1.5f;
-            if (dist > maxRange)
-            {
-                Debug.LogWarning($"[NetworkManager] Rejected damage RPC: distance {dist:F2} > max {maxRange:F2}");
-                return false;
-            }
-
-            return true;
-        }
-
-        public bool ValidateSuperRPC(int actorNumber)
-        {
-            if (!_networkedPlayers.TryGetValue(actorNumber, out var player))
-                return false;
-            if (!player.HasSuperReady)
-            {
-                Debug.LogWarning($"[NetworkManager] Rejected super RPC: player {actorNumber} super not ready.");
-                return false;
-            }
-            return true;
-        }
-
-        public bool ValidatePositionRPC(int actorNumber, Vector3 position)
-        {
-            if (!_networkedPlayers.TryGetValue(actorNumber, out var player))
-                return false;
-
-            float dist = Vector2.Distance(player.transform.position, position);
-            float maxTeleport = player.GetData().movementSpeed * Time.deltaTime * 3f;
-            if (dist > maxTeleport)
-            {
-                Debug.LogWarning($"[NetworkManager] Rejected position RPC: teleport {dist:F2} > max {maxTeleport:F2}");
-                return false;
-            }
-            return true;
-        }
+        public void SendGameAction(GameAction action) => _service?.SendGameAction(action);
 
         #endregion
 
-        #region Networked Events
+        #region Legacy RPC Validation (deprecated, use ServerValidator directly)
 
-        [System.Obsolete("Use Photon RPCs in production")]
-        public void SendDamageEvent(int attackerActor, int victimActor, int damage, bool isSuper)
+        [System.Obsolete("Use ServerValidator.ValidateDamage instead.")]
+        public bool ValidateDamageRPC(int attackerActorNumber, int victimActorNumber, int damage)
         {
-            if (!_isInRoom) return;
-            // PhotonView.Get(this).RPC("ReceiveDamageRPC", RpcTarget.All, attackerActor, victimActor, damage, isSuper);
+            // Legacy stub — real validation should use ServerValidator
+            return ServerValidator.ValidateDamage(damage, Vector3.zero, Vector3.zero, float.MaxValue);
         }
 
-        [System.Obsolete("Use Photon RPCs in production")]
+        [System.Obsolete("Use ServerValidator.ValidateSuper instead.")]
+        public bool ValidateSuperRPC(int actorNumber) => true;
+
+        [System.Obsolete("Use ServerValidator.ValidatePosition instead.")]
+        public bool ValidatePositionRPC(int actorNumber, Vector3 position) => true;
+
+        #endregion
+
+        #region Legacy Networked Events (deprecated)
+
+        [System.Obsolete("Use SendGameAction or EventBus instead.")]
+        public void SendDamageEvent(int attackerActor, int victimActor, int damage, bool isSuper)
+        {
+            _service?.SendGameAction(new GameAction
+            {
+                Type = GameActionType.DamageApplied,
+                ActorNumber = attackerActor,
+                TargetActorNumber = victimActor,
+                IntValue = damage
+            });
+        }
+
+        [System.Obsolete("Use SendGameAction or EventBus instead.")]
         public void SendSuperEvent(int actorNumber, string abilityName)
         {
-            if (!_isInRoom) return;
-            // PhotonView.Get(this).RPC("ReceiveSuperRPC", RpcTarget.All, actorNumber, abilityName);
+            _service?.SendGameAction(new GameAction
+            {
+                Type = GameActionType.SuperActivated,
+                ActorNumber = actorNumber,
+                StringValue = abilityName
+            });
         }
 
         #endregion

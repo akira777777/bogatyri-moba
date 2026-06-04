@@ -87,8 +87,9 @@ namespace BogatyriMoba.Core
 
             Gem nearestGem = null;
             float gemDistSqr = attackRange * attackRange * 9f;
-            var gems = SpawnManager.Instance != null
-                ? SpawnManager.Instance.ActiveGems
+            var spawnService = GameServices.Get<ISpawnService>();
+            var gems = spawnService != null
+                ? spawnService.ActiveGems
                 : GameManager.Instance?.ActiveGems;
             if (gems != null)
             {

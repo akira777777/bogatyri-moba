@@ -259,9 +259,8 @@ namespace BogatyriMoba.Core
             else
             {
                 // Retreat to spawn
-                var spawnPoints = controller.TeamId == 0
-                    ? SpawnManager.Instance?.team1SpawnPoints
-                    : SpawnManager.Instance?.team2SpawnPoints;
+                var spawnService = GameServices.Get<ISpawnService>();
+                var spawnPoints = spawnService?.GetSpawnPoints(controller.TeamId);
 
                 if (spawnPoints != null && spawnPoints.Length > 0)
                 {
@@ -370,7 +369,8 @@ namespace BogatyriMoba.Core
 
         private void FindNearestEnemyFallback()
         {
-            var nearest = BrawlerRegistry.FindNearestEnemy(
+            var registry = GameServices.Get<IBrawlerRegistry>();
+            var nearest = registry?.FindNearestEnemy(
                 cachedTransform.position,
                 visionRadiusSqr,
                 controller,
@@ -393,7 +393,8 @@ namespace BogatyriMoba.Core
             Gem nearest = null;
             float nearestDist = 25f * 25f; // Max search range squared
 
-            var gems = SpawnManager.Instance?.ActiveGems;
+            var spawnService = GameServices.Get<ISpawnService>();
+            var gems = spawnService?.ActiveGems;
             if (gems != null)
             {
                 for (int i = 0; i < gems.Count; i++)

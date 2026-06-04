@@ -6,7 +6,8 @@
         "UnityEngine",
         "UnityEditor",
         "Unity.TextMeshPro",
-        "UnityEngine.UI"
+        "UnityEngine.UI",
+        "Unity.Addressables.Editor"
     ],
     "includePlatforms": [
         "Editor"

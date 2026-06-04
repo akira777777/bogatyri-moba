@@ -73,10 +73,16 @@ namespace BogatyriMoba.Core
                 if (target.ActorNumber == ownerActorNumber || target.TeamId == ownerTeamId)
                     return;
 
-                target.TakeDamage(damage, owner);
+                var targetHealth = target.GetComponent<HealthComponent>();
+                if (targetHealth != null)
+                    targetHealth.TakeDamage(damage, owner);
 
                 if (!isSuper && owner != null && data != null)
-                    owner.ChargeSuper(data.superChargePerHit);
+                {
+                    var ownerCombat = owner.GetComponent<CombatComponent>();
+                    if (ownerCombat != null)
+                        ownerCombat.ChargeSuper(data.superChargePerHit);
+                }
 
                 if (!piercing)
                     Destroy(gameObject);

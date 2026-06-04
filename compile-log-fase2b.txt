@@ -1,0 +1,412 @@
+[Licensing::Module] Trying to connect to existing licensing client channel...
+Built from '6000.4/staging' branch; Version is '6000.4.9f1 (f7258d6eebbe) revision 16197005'; Using compiler version '194234433'; Build Type 'Release'
+OS: 'Windows 11  (10.0.26300) Professional' Language: 'ru' Physical Memory: 32675 MB
+BatchMode: 1, IsHumanControllingUs: 0, StartBugReporterOnCrash: 0, Is64bit: 1
+[Licensing::IpcConnector] Channel LicenseClient-fear7 doesn't exist
+System  architecture: x64
+Process architecture: x64
+Date: 2026-06-03T04:28:19Z
+[Licensing::Module] Successfully launched the LicensingClient (PId: 26144)
+
+COMMAND LINE ARGUMENTS:
+C:\Program Files\Unity\Hub\Editor\6000.4.9f1\Editor\Unity.exe
+-batchmode
+-quit
+-projectPath
+.
+-logFile
+compile-log-fase2b.txt
+Successfully changed project path to: C:/Users/fear7/Desktop/bogatyri-moba
+C:/Users/fear7/Desktop/bogatyri-moba
+[UnityMemory] Configuration Parameters - Can be set up in boot.config
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-nav-mesh-worker=65536"
+    "memorysetup-temp-allocator-size-audio-worker=65536"
+    "memorysetup-temp-allocator-size-cloud-worker=32768"
+    "memorysetup-temp-allocator-size-gfx=262144"
+    "memorysetup-temp-allocator-size-preload-manager=33554432"
+    "memorysetup-temp-allocator-size-job-worker=262144"
+    "memorysetup-temp-allocator-size-background-worker=32768"
+    "memorysetup-allocator-temp-initial-block-size-main=262144"
+    "memorysetup-allocator-temp-initial-block-size-worker=262144"
+    "memorysetup-bucket-allocator-granularity=16"
+    "memorysetup-bucket-allocator-bucket-count=8"
+    "memorysetup-bucket-allocator-block-size=33554432"
+    "memorysetup-bucket-allocator-block-count=8"
+    "memorysetup-main-allocator-block-size=16777216"
+    "memorysetup-thread-allocator-block-size=16777216"
+    "memorysetup-gfx-main-allocator-block-size=16777216"
+    "memorysetup-gfx-thread-allocator-block-size=16777216"
+    "memorysetup-cache-allocator-block-size=4194304"
+    "memorysetup-typetree-allocator-block-size=2097152"
+    "memorysetup-profiler-bucket-allocator-granularity=16"
+    "memorysetup-profiler-bucket-allocator-bucket-count=8"
+    "memorysetup-profiler-bucket-allocator-block-size=33554432"
+    "memorysetup-profiler-bucket-allocator-block-count=8"
+    "memorysetup-profiler-allocator-block-size=16777216"
+    "memorysetup-profiler-editor-allocator-block-size=1048576"
+    "memorysetup-temp-allocator-size-main=16777216"
+    "memorysetup-job-temp-allocator-block-size=2097152"
+    "memorysetup-job-temp-allocator-block-size-background=1048576"
+    "memorysetup-job-temp-allocator-reduction-small-platforms=262144"
+Player connection [24820]  Target information:
+
+Player connection [24820]  * "[IP] 192.168.0.186 [Port] 55504 [Flags] 2 [Guid] 2048232808 [EditorId] 2048232808 [Version] 1048832 [Id] WindowsEditor(7,NOCT) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
+
+Player connection [24820]  * "[IP] 172.30.144.1 [Port] 55504 [Flags] 2 [Guid] 2048232808 [EditorId] 2048232808 [Version] 1048832 [Id] WindowsEditor(7,NOCT) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
+
+Player connection [24820] Host joined multi-casting on [225.0.0.222:54997]...
+Player connection [24820] Host joined alternative multi-casting on [225.0.0.222:34997]...
+Input System module state changed to: Initialized.
+[Physics::Module] Initialized fallback backend.
+[Physics::Module] Id: 0xdecafbad
+Starting IPC server.
+Waiting for clients to connect on \\.\pipe\Unity-LicenseClient-fear7, press Ctrl-C to exit.
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-fear7" at "2026-06-03T04:28:19.764506Z"
+[Licensing::Client] Code 10 while verifying Licensing Client signature (process Id: 26144, path: "C:/Program Files/Unity/Hub/Editor/6000.4.9f1/Editor/Data/Resources/Licensing/Client/Unity.Licensing.Client.exe")
+[Licensing::Module] LicensingClient has failed validation; ignoring
+[Package Manager] Connected to IPC stream "Upm-40144" after 0.2 seconds.
+[Licensing::Module] Licensing is not yet initialized.
+[Licensing::Client] Handshaking with LicensingClient:
+  Version:                 1.18.1+9fbee8e
+  Session Id:              860498361a6b45c09819d460982f05c7
+  Correlation Id:          474890cb8ef9eb730c009c56955abb4b
+  External correlation Id: 410223386225415580
+  Machine Id:              SVPEjUPRyZf7jlZac5lhDR93xM0=
+[Licensing::Module] Successfully connected to LicensingClient on channel: "LicenseClient-fear7" (connect: 0.24s, validation: 0.15s, handshake: 0.03s)
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-fear7-notifications" at "2026-06-03T04:28:19.9406161Z"
+[Licensing::Module] Connected to LicensingClient (PId: 26144, launch time: 0.00, total connection time: 0.42s)
+[Licensing::Module] Error: Access token is unavailable; failed to update
+[Licensing::Client] Successfully resolved entitlement details
+[Licensing::Module] License group:
+  Id: 7972579317879-UnityPersXXXX
+  Product: Unity Personal
+  Type: Assigned
+  Expiration: Unlimited
+[Licensing::Client] Successfully updated license, isAsync: True, time: 0.01
+[Licensing::Client] Successfully resolved entitlement details
+[Licensing::Module] Licensing Background thread has ended after 0.45s
+[Licensing::Module] Licensing is initialized (took 0.05s).
+[Licensing::Client] Successfully resolved entitlement details
+Library Redirect Path: Library/
+[Physics::Module] Selected backend.
+[Physics::Module] Name: PhysX
+[Physics::Module] Id: 0xf2b8ea05
+[Physics::Module] SDK Version: 4.1.2
+[Physics::Module] Integration Version: 1.0.0
+[Physics::Module] Threading Mode: Multi-Threaded
+Initialize engine version: 6000.4.9f1 (f7258d6eebbe)
+[Subsystems] Discovering subsystems at path C:/Program Files/Unity/Hub/Editor/6000.4.9f1/Editor/Data/Resources/UnitySubsystems
+[Subsystems] Discovering subsystems at path C:/Users/fear7/Desktop/bogatyri-moba/Assets
+GfxDevice: creating device client; kGfxThreadingModeNonThreaded
+d3d12: failed to query info queue interface (0x80004002).
+Direct3D:
+    Version:         Direct3D 12 [level 12.2]
+    Renderer:        NVIDIA GeForce RTX 4070 Ti (ID=0x2782)
+    Vendor:          NVIDIA
+    VRAM:            11996 MB
+    App VRAM Budget: 11228 MB
+    Driver:          32.0.16.1047
+Initialize mono
+Mono path[0] = 'C:/Program Files/Unity/Hub/Editor/6000.4.9f1/Editor/Data/Managed'
+Mono path[1] = 'C:/Program Files/Unity/Hub/Editor/6000.4.9f1/Editor/Data/MonoBleedingEdge/lib/mono/unityjit-win32'
+Mono config path = 'C:/Program Files/Unity/Hub/Editor/6000.4.9f1/Editor/Data/MonoBleedingEdge/etc'
+Using monoOptions --debugger-agent=transport=dt_socket,embedding=1,server=y,suspend=n,address=127.0.0.1:56144
+CodeReloadManager initialized
+Using cacheserver namespaces - metadata:defaultmetadata, artifacts:defaultartifacts
+Using cacheserver namespaces - metadata:defaultmetadata, artifacts:defaultartifacts
+ImportWorker Server TCP listen port: 0
+AcceleratorClientConnectionCallback - disconnected - :0
+Begin MonoManager ReloadAssembly
+Registering precompiled unity dll's ...
+Register platform support module: C:/Program Files/Unity/Hub/Editor/6000.4.9f1/Editor/Data/PlaybackEngines/WindowsStandaloneSupport/UnityEditor.WindowsStandalone.Extensions.dll
+Registered in 0.001847 seconds.
+Native extension for WindowsStandalone target not found
+Package Manager log level set to [2]
+ScheduleIndexationOnStartup MainProcess:False IndexOnStartup:True
+Mono: successfully reloaded assembly
+- Finished resetting the current domain, in  0.328 seconds
+Domain Reload Profiling: 715ms
+	BeginReloadAssembly (121ms)
+		CreateAndSetChildDomain (19ms)
+	RebuildCommonClasses (33ms)
+	RebuildNativeTypeToScriptingClass (11ms)
+	initialDomainReloadingComplete (53ms)
+	LoadAllAssembliesAndSetupDomain (167ms)
+		LoadAssemblies (100ms)
+		AnalyzeDomain (159ms)
+			TypeCache.Refresh (158ms)
+				TypeCache.ScanAssembly (147ms)
+	FinalizeReload (329ms)
+		SetupLoadedEditorAssemblies (0ms)
+			InitializePlatformSupportModulesInManaged (36ms)
+			BeforeProcessingInitializeOnLoad (73ms)
+			ProcessInitializeOnLoadAttributes (91ms)
+			ProcessInitializeOnLoadMethodAttributes (73ms)
+[Licensing::Client] Successfully resolved entitlement details
+Application.AssetDatabase Initial Refresh Start
+[Package Manager] Restoring resolved packages state from cache
+[Licensing::Client] Successfully resolved entitlement details
+[Package Manager] Registered 38 packages:
+  Packages from [https://packages.unity.com]:
+    com.unity.addressables@2.9.1 (location: C:\Users\fear7\Desktop\bogatyri-moba\Library\PackageCache\com.unity.addressables@8460f1c9c927)
+    com.unity.ai.navigation@2.0.12 (location: C:\Users\fear7\Desktop\bogatyri-moba\Library\PackageCache\com.unity.ai.navigation@734c2c4c5591)
+    com.unity.ide.rider@3.0.40 (location: C:\Users\fear7\Desktop\bogatyri-moba\Library\PackageCache\com.unity.ide.rider@e4950c6d131b)
+    com.unity.ide.visualstudio@2.0.27 (location: C:\Users\fear7\Desktop\bogatyri-moba\Library\PackageCache\com.unity.ide.visualstudio@dc1ddd4f09b6)
+    com.unity.localization@1.5.8 (location: C:\Users\fear7\Desktop\bogatyri-moba\Library\PackageCache\com.unity.localization@d45547f9f157)
+    com.unity.timeline@1.8.12 (location: C:\Users\fear7\Desktop\bogatyri-moba\Library\PackageCache\com.unity.timeline@8cd8509afae5)
+    com.unity.nuget.newtonsoft-json@3.2.2 (location: C:\Users\fear7\Desktop\bogatyri-moba\Library\PackageCache\com.unity.nuget.newtonsoft-json@4dfd81071c64)
+    com.unity.profiling.core@1.0.3 (location: C:\Users\fear7\Desktop\bogatyri-moba\Library\PackageCache\com.unity.profiling.core@8a49f7027d06)
+    com.unity.scriptablebuildpipeline@2.6.1 (location: C:\Users\fear7\Desktop\bogatyri-moba\Library\PackageCache\com.unity.scriptablebuildpipeline@36e3b5898ee2)
+  Built-in packages:
+    com.unity.2d.sprite@1.0.0 (location: C:\Users\fear7\Desktop\bogatyri-moba\Library\PackageCache\com.unity.2d.sprite@b95cc7beb645)
+    com.unity.2d.tilemap@1.0.0 (location: C:\Users\fear7\Desktop\bogatyri-moba\Library\PackageCache\com.unity.2d.tilemap@771fb19abead)
+    com.unity.test-framework@1.6.0 (location: C:\Users\fear7\Desktop\bogatyri-moba\Library\PackageCache\com.unity.test-framework@76560ee600cb)
+    com.unity.ugui@2.0.0 (location: C:\Users\fear7\Desktop\bogatyri-moba\Library\PackageCache\com.unity.ugui@1f2d1ab0d950)
+    com.unity.modules.accessibility@1.0.0 (location: C:\Users\fear7\Desktop\bogatyri-moba\Library\PackageCache\com.unity.modules.accessibility)
+    com.unity.modules.ai@1.0.0 (location: C:\Users\fear7\Desktop\bogatyri-moba\Library\PackageCache\com.unity.modules.ai)
+    com.unity.modules.androidjni@1.0.0 (location: C:\Users\fear7\Desktop\bogatyri-moba\Library\PackageCache\com.unity.modules.androidjni)
+    com.unity.modules.animation@1.0.0 (location: C:\Users\fear7\Desktop\bogatyri-moba\Library\PackageCache\com.unity.modules.animation)
+    com.unity.modules.assetbundle@1.0.0 (location: C:\Users\fear7\Desktop\bogatyri-moba\Library\PackageCache\com.unity.modules.assetbundle)
+    com.unity.modules.audio@1.0.0 (location: C:\Users\fear7\Desktop\bogatyri-moba\Library\PackageCache\com.unity.modules.audio)
+    com.unity.modules.director@1.0.0 (location: C:\Users\fear7\Desktop\bogatyri-moba\Library\PackageCache\com.unity.modules.director)
+    com.unity.modules.imageconversion@1.0.0 (location: C:\Users\fear7\Desktop\bogatyri-moba\Library\PackageCache\com.unity.modules.imageconversion)
+    com.unity.modules.imgui@1.0.0 (location: C:\Users\fear7\Desktop\bogatyri-moba\Library\PackageCache\com.unity.modules.imgui)
+    com.unity.modules.jsonserialize@1.0.0 (location: C:\Users\fear7\Desktop\bogatyri-moba\Library\PackageCache\com.unity.modules.jsonserialize)
+    com.unity.modules.particlesystem@1.0.0 (location: C:\Users\fear7\Desktop\bogatyri-moba\Library\PackageCache\com.unity.modules.particlesystem)
+    com.unity.modules.physics@1.0.0 (location: C:\Users\fear7\Desktop\bogatyri-moba\Library\PackageCache\com.unity.modules.physics)
+    com.unity.modules.physics2d@1.0.0 (location: C:\Users\fear7\Desktop\bogatyri-moba\Library\PackageCache\com.unity.modules.physics2d)
+    com.unity.modules.screencapture@1.0.0 (location: C:\Users\fear7\Desktop\bogatyri-moba\Library\PackageCache\com.unity.modules.screencapture)
+    com.unity.modules.tilemap@1.0.0 (location: C:\Users\fear7\Desktop\bogatyri-moba\Library\PackageCache\com.unity.modules.tilemap)
+    com.unity.modules.ui@1.0.0 (location: C:\Users\fear7\Desktop\bogatyri-moba\Library\PackageCache\com.unity.modules.ui)
+    com.unity.modules.uielements@1.0.0 (location: C:\Users\fear7\Desktop\bogatyri-moba\Library\PackageCache\com.unity.modules.uielements)
+    com.unity.modules.unityanalytics@1.0.0 (location: C:\Users\fear7\Desktop\bogatyri-moba\Library\PackageCache\com.unity.modules.unityanalytics)
+    com.unity.modules.unitywebrequest@1.0.0 (location: C:\Users\fear7\Desktop\bogatyri-moba\Library\PackageCache\com.unity.modules.unitywebrequest)
+    com.unity.modules.unitywebrequestassetbundle@1.0.0 (location: C:\Users\fear7\Desktop\bogatyri-moba\Library\PackageCache\com.unity.modules.unitywebrequestassetbundle)
+    com.unity.modules.unitywebrequestaudio@1.0.0 (location: C:\Users\fear7\Desktop\bogatyri-moba\Library\PackageCache\com.unity.modules.unitywebrequestaudio)
+    com.unity.modules.unitywebrequesttexture@1.0.0 (location: C:\Users\fear7\Desktop\bogatyri-moba\Library\PackageCache\com.unity.modules.unitywebrequesttexture)
+    com.unity.modules.unitywebrequestwww@1.0.0 (location: C:\Users\fear7\Desktop\bogatyri-moba\Library\PackageCache\com.unity.modules.unitywebrequestwww)
+    com.unity.modules.hierarchycore@1.0.0 (location: C:\Users\fear7\Desktop\bogatyri-moba\Library\PackageCache\com.unity.modules.hierarchycore)
+    com.unity.ext.nunit@2.0.5 (location: C:\Users\fear7\Desktop\bogatyri-moba\Library\PackageCache\com.unity.ext.nunit@d8c07649098d)
+[Subsystems] No new subsystems found in resolved package list.
+[Package Manager] Done registering packages in 0.01 seconds
+[ScriptCompilation] Requested script compilation because: AssetDatabase observed changes in script compilation related files
+info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://localhost:80
+info: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+info: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Production
+info: Microsoft.Hosting.Lifetime[0]
+      Content root path: C:\Users\fear7\Desktop\bogatyri-moba
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/2 POST http://ilpp/UnityILPP.PostProcessing/Ping - application/grpc -
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'gRPC - /UnityILPP.PostProcessing/Ping'
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'gRPC - /UnityILPP.PostProcessing/Ping'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/2 POST http://ilpp/UnityILPP.PostProcessing/Ping - 200 - application/grpc 25.4082ms
+Starting: C:\Program Files\Unity\Hub\Editor\6000.4.9f1\Editor\Data\Tools\BuildPipeline\bee_backend.exe --ipc --defer-dag-verification --dagfile="Library/Bee/1900b0aE.dag" --continue-on-failure --profile="Library/Bee/backend1.traceevents" ScriptAssemblies
+WorkingDir: C:/Users/fear7/Desktop/bogatyri-moba
+DisplayProgressbar: Compiling Scripts
+ExitCode: 4 Duration: 1s78ms
+Rebuilding DAG because FileSignature timestamp changed: Library/Bee/1900b0aE-inputdata.json
+*** Tundra requires additional run (1.06 seconds), 1 items updated, 416 evaluated
+Starting: C:\Program Files\Unity\Hub\Editor\6000.4.9f1\Editor\Data\netcorerun\netcorerun.exe "C:\Program Files\Unity\Hub\Editor\6000.4.9f1\Editor\Data\Tools\BuildPipeline\ScriptCompilationBuildProgram.exe" "Library/Bee/1900b0aE.dag.json" "Library/Bee/1900b0aE-inputdata.json" "Library\Bee\buildprogram0.traceevents"
+WorkingDir: C:/Users/fear7/Desktop/bogatyri-moba
+ExitCode: 0 Duration: 0s354ms
+Starting: C:\Program Files\Unity\Hub\Editor\6000.4.9f1\Editor\Data\Tools\BuildPipeline\bee_backend.exe --ipc --defer-dag-verification --dagfile="Library/Bee/1900b0aE.dag" --continue-on-failure --dagfilejson="Library\Bee\1900b0aE.dag.json" --profile="Library/Bee/backend2.traceevents" ScriptAssemblies
+WorkingDir: C:/Users/fear7/Desktop/bogatyri-moba
+ExitCode: 0 Duration: 0s796ms
+Finished compiling graph: 429 nodes, 6081 flattened edges (5643 ToBuild, 66 ToUse), maximum node priority 265
+[276/426    0s] WriteText Library/Bee/artifacts/1900b0aE.dag/BogatyriMoba.rsp
+[417/426    0s] Csc Library/Bee/artifacts/1900b0aE.dag/BogatyriMoba.dll (+2 others)
+Assets\Scripts\Core\FireBreathZone.cs(69,21): warning CS0618: 'BrawlerController.TakeDamage(int, BrawlerController)' is obsolete: 'Use HealthComponent.TakeDamage instead'
+
+Assets\Scripts\Core\HorseProjectile.cs(68,17): warning CS0618: 'BrawlerController.TakeDamage(int, BrawlerController)' is obsolete: 'Use HealthComponent.TakeDamage instead'
+
+Assets\Scripts\Core\Ultimates\RoarUltimate.cs(18,13): warning CS0618: 'BrawlerController.ApplyShield(int, float)' is obsolete: 'Use HealthComponent.ApplyShield instead'
+
+Assets\Scripts\Core\Ultimates\RoarUltimate.cs(26,17): warning CS0618: 'BrawlerController.ApplyStun(float)' is obsolete: 'Use HealthComponent.ApplyStun instead'
+
+Assets\Scripts\Core\Ultimates\RoarUltimate.cs(27,17): warning CS0618: 'BrawlerController.TakeDamage(int, BrawlerController)' is obsolete: 'Use HealthComponent.TakeDamage instead'
+
+Assets\Scripts\Core\Ultimates\HealUltimate.cs(30,17): warning CS0618: 'BrawlerController.Heal(int)' is obsolete: 'Use HealthComponent.Heal instead'
+
+Assets\Scripts\Core\Ultimates\FireBreathUltimate.cs(71,21): warning CS0618: 'BrawlerController.TakeDamage(int, BrawlerController)' is obsolete: 'Use HealthComponent.TakeDamage instead'
+
+Assets\Scripts\Core\PerformanceManager.cs(26,40): warning CS0414: The field 'PerformanceManager.adjustmentInterval' is assigned but its value is never used
+[418/426    0s] CopyFiles Library/ScriptAssemblies/BogatyriMoba.dll
+[419/426    0s] CopyFiles Library/ScriptAssemblies/BogatyriMoba.pdb
+[420/426    0s] Csc Library/Bee/artifacts/1900b0aE.dag/BogatyriMoba.Tests.dll (+2 others)
+[421/426    0s] CopyFiles Library/ScriptAssemblies/BogatyriMoba.Tests.dll
+[422/426    0s] CopyFiles Library/ScriptAssemblies/BogatyriMoba.Tests.pdb
+[423/426    0s] Csc Library/Bee/artifacts/1900b0aE.dag/BogatyriMoba.Editor.dll (+2 others)
+Assets\Scripts\Editor\ProjectSetupWizard.cs(494,17): warning CS0618: 'Object.FindObjectOfType<T>()' is obsolete: 'Object.FindObjectOfType has been deprecated. Use Object.FindAnyObjectByType instead.'
+[424/426    0s] CopyFiles Library/ScriptAssemblies/BogatyriMoba.Editor.pdb
+[425/426    0s] CopyFiles Library/ScriptAssemblies/BogatyriMoba.Editor.dll
+*** Tundra build success (0.78 seconds), 10 items updated, 426 evaluated
+Assets\Scripts\Core\FireBreathZone.cs(69,21): warning CS0618: 'BrawlerController.TakeDamage(int, BrawlerController)' is obsolete: 'Use HealthComponent.TakeDamage instead'
+Assets\Scripts\Core\HorseProjectile.cs(68,17): warning CS0618: 'BrawlerController.TakeDamage(int, BrawlerController)' is obsolete: 'Use HealthComponent.TakeDamage instead'
+Assets\Scripts\Core\Ultimates\RoarUltimate.cs(18,13): warning CS0618: 'BrawlerController.ApplyShield(int, float)' is obsolete: 'Use HealthComponent.ApplyShield instead'
+Assets\Scripts\Core\Ultimates\RoarUltimate.cs(26,17): warning CS0618: 'BrawlerController.ApplyStun(float)' is obsolete: 'Use HealthComponent.ApplyStun instead'
+Assets\Scripts\Core\Ultimates\RoarUltimate.cs(27,17): warning CS0618: 'BrawlerController.TakeDamage(int, BrawlerController)' is obsolete: 'Use HealthComponent.TakeDamage instead'
+Assets\Scripts\Core\Ultimates\HealUltimate.cs(30,17): warning CS0618: 'BrawlerController.Heal(int)' is obsolete: 'Use HealthComponent.Heal instead'
+Assets\Scripts\Core\Ultimates\FireBreathUltimate.cs(71,21): warning CS0618: 'BrawlerController.TakeDamage(int, BrawlerController)' is obsolete: 'Use HealthComponent.TakeDamage instead'
+Assets\Scripts\Core\PerformanceManager.cs(26,40): warning CS0414: The field 'PerformanceManager.adjustmentInterval' is assigned but its value is never used
+Assets\Scripts\Editor\ProjectSetupWizard.cs(494,17): warning CS0618: 'Object.FindObjectOfType<T>()' is obsolete: 'Object.FindObjectOfType has been deprecated. Use Object.FindAnyObjectByType instead.'
+AssetDatabase: script compilation time: 2.564211s
+Begin MonoManager ReloadAssembly
+Assembly Assembly-CSharp-Editor-firstpass.dll at Library/ScriptAssemblies/Assembly-CSharp-Editor-firstpass.dll not valid. Loading of assembly skipped.
+Assembly Assembly-CSharp-Editor.dll at Library/ScriptAssemblies/Assembly-CSharp-Editor.dll not valid. Loading of assembly skipped.
+Assembly Assembly-CSharp-firstpass.dll at Library/ScriptAssemblies/Assembly-CSharp-firstpass.dll not valid. Loading of assembly skipped.
+Assembly Assembly-CSharp.dll at Library/ScriptAssemblies/Assembly-CSharp.dll not valid. Loading of assembly skipped.
+Assembly DocCodeExamples.dll at Library/ScriptAssemblies/DocCodeExamples.dll not valid. Loading of assembly skipped.
+Assembly TestNewCustomAssembly.dll at Library/ScriptAssemblies/TestNewCustomAssembly.dll not valid. Loading of assembly skipped.
+Assembly Unity.2D.Sprite.Package.EditorTests.dll at Library/ScriptAssemblies/Unity.2D.Sprite.Package.EditorTests.dll not valid. Loading of assembly skipped.
+Assembly Unity.2D.Tilemap.Package.EditorTests.dll at Library/ScriptAssemblies/Unity.2D.Tilemap.Package.EditorTests.dll not valid. Loading of assembly skipped.
+Assembly Unity.Addressables.Editor.Tests.dll at Library/ScriptAssemblies/Unity.Addressables.Editor.Tests.dll not valid. Loading of assembly skipped.
+Assembly Unity.Addressables.Runtime.Tests.dll at Library/ScriptAssemblies/Unity.Addressables.Runtime.Tests.dll not valid. Loading of assembly skipped.
+Assembly Unity.Localization.DocCodeSamples.dll at Library/ScriptAssemblies/Unity.Localization.DocCodeSamples.dll not valid. Loading of assembly skipped.
+Assembly Unity.ResourceManager.Tests.dll at Library/ScriptAssemblies/Unity.ResourceManager.Tests.dll not valid. Loading of assembly skipped.
+Assembly Unity.ScriptableBuildPipeline.Editor.Tests.dll at Library/ScriptAssemblies/Unity.ScriptableBuildPipeline.Editor.Tests.dll not valid. Loading of assembly skipped.
+Assembly Unity.ScriptableBuildPipeline.Tests.dll at Library/ScriptAssemblies/Unity.ScriptableBuildPipeline.Tests.dll not valid. Loading of assembly skipped.
+Assembly Unity.ScriptableBuildPipelineTests.Runtime.Tests.dll at Library/ScriptAssemblies/Unity.ScriptableBuildPipelineTests.Runtime.Tests.dll not valid. Loading of assembly skipped.
+Assembly Unity.TextMeshPro.Editor.Tests.dll at Library/ScriptAssemblies/Unity.TextMeshPro.Editor.Tests.dll not valid. Loading of assembly skipped.
+Assembly Unity.TextMeshPro.Tests.dll at Library/ScriptAssemblies/Unity.TextMeshPro.Tests.dll not valid. Loading of assembly skipped.
+Assembly UnityEditor.UI.Common.Tests.dll at Library/ScriptAssemblies/UnityEditor.UI.Common.Tests.dll not valid. Loading of assembly skipped.
+Assembly UnityEditor.UI.EditorTests.dll at Library/ScriptAssemblies/UnityEditor.UI.EditorTests.dll not valid. Loading of assembly skipped.
+Assembly UnityEngine.UI.Tests.dll at Library/ScriptAssemblies/UnityEngine.UI.Tests.dll not valid. Loading of assembly skipped.
+Symbol file LoadedFromMemory is not a mono symbol file
+Native extension for WindowsStandalone target not found
+ScheduleIndexationOnStartup MainProcess:True IndexOnStartup:True
+Mono: successfully reloaded assembly
+- Finished resetting the current domain, in  0.496 seconds
+Domain Reload Profiling: 1181ms
+	BeginReloadAssembly (319ms)
+		DisableScriptedObjects (43ms)
+		CreateAndSetChildDomain (158ms)
+	RebuildCommonClasses (46ms)
+	RebuildNativeTypeToScriptingClass (10ms)
+	initialDomainReloadingComplete (54ms)
+	LoadAllAssembliesAndSetupDomain (257ms)
+		LoadAssemblies (248ms)
+		AnalyzeDomain (87ms)
+			TypeCache.Refresh (65ms)
+				TypeCache.ScanAssembly (58ms)
+			BuildScriptInfoCaches (18ms)
+			ResolveRequiredComponents (3ms)
+	FinalizeReload (496ms)
+		SetupLoadedEditorAssemblies (0ms)
+			InitializePlatformSupportModulesInManaged (19ms)
+			BeforeProcessingInitializeOnLoad (126ms)
+			ProcessInitializeOnLoadAttributes (155ms)
+			ProcessInitializeOnLoadMethodAttributes (51ms)
+			AfterProcessingInitializeOnLoad (6ms)
+		AwakeInstancesAfterBackupRestoration (19ms)
+(Values over 0.050ms)
+Asset Pipeline Refresh (id=aea1358d6a148d84a98e52bbbcaf35cb): Total: 4.189 seconds - Initiated by InitialRefreshV2(ForceSynchronousImport)
+	Summary:
+		Imports: total=0 (actual=0, local cache=0, cache server=0)
+		Asset DB Process Time: managed=0 ms, native=683 ms
+		Asset DB Callback time: managed=201 ms, native=18 ms
+		Scripting: domain reloads=1, domain reload time=692 ms, compile time=2566 ms, other=25 ms
+		Project Asset Count: scripts=597, non-scripts=810
+		Asset File Changes: new=1, changed=9, moved=0, deleted=0
+		Scan Filter Count: 0
+	InvokePackagesCallback: 15.281ms
+	ApplyChangesToAssetFolders: 0.451ms
+	Scan: 44.487ms
+	OnSourceAssetsModified: 0.614ms
+	CategorizeScriptCompilationAssets: 12.633ms
+	ProcessAssetsWithTransientArtifactChanges: 28.661ms
+	CategorizeAssets: 10.973ms
+	CompileScripts: 2565.680ms
+	ImportOutOfDateAssets: 499.873ms (498.497ms without children)
+		UnloadImportedAssets: 1.012ms
+		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.146ms
+		OnDemandSchedulerStart: 0.215ms
+	PostProcessAllAssets: 202.526ms
+		VCAutoAddAssetPostprocess 0.876ms
+		XRBuildSystem.XRAssetImported 0.070ms
+		VersionControlSettings.HiddenFilePostprocess 0.060ms
+		PostProcessCallbackCreateDeferredMaterials 0.056ms
+		MonoPostProcessAllAssets: 200.829ms
+			SyncVS.PostprocessSyncProject 118.720ms
+			AssetPostprocessor.OnPostprocessAllAssets 34.644ms
+			StyleCatalogPostProcessor.OnPostprocessAllAssets 14.002ms
+			WindowAssetPostprocessingWatcher.OnPostprocessAllAssets 6.040ms
+			BuilderAssetPostprocessor.OnPostprocessAllAssets 5.169ms
+			PackageManagerResolver.OnPostprocessAllAssets 1.567ms
+			AssetChangedListener.OnPostprocessAllAssets 1.474ms
+			VersionHandlerImpl.OnPostprocessAllAssets 1.279ms
+			RetainedModeAssetPostprocessor.OnPostprocessAllAssets 0.986ms
+			LocalizationAssetPostProcessor.OnPostprocessAllAssets 0.923ms
+			AddressablesAssetPostProcessor.OnPostprocessAllAssets 0.841ms
+			SpeedTree9Postprocessor.OnPostprocessAllAssets 0.654ms
+			TextAssetPostProcessor.OnPostprocessAllAssets 0.494ms
+			AssetPathToTypes.OnPostprocessAllAssets 0.459ms
+			SpriteEditorTexturePostprocessor.OnPostprocessAllAssets 0.423ms
+			ArtifactBrowserPostProcessor.OnPostprocessAllAssets 0.394ms
+			IOSResolver.OnPostprocessAllAssets 0.378ms
+			PlayServicesResolver.OnPostprocessAllAssets 0.345ms
+			ReferencedClipsPostProcessor.OnPostprocessAllAssets 0.289ms
+			TMPro_TexturePostProcessor.OnPostprocessAllAssets 0.255ms
+			AudioMixerPostprocessor.OnPostprocessAllAssets 0.219ms
+			AssetProcessor.OnPostprocessAllAssets 0.214ms
+			TerrainToolbarOverlayPostProcessor.OnPostprocessAllAssets 0.177ms
+			AssetEvents.OnPostprocessAllAssets 0.173ms
+			AssetDatabaseCallbacks.OnPostprocessAllAssets 0.141ms
+			SamplePostprocessor.OnPostprocessAllAssets 0.128ms
+			ConfigAssetsTracker.OnPostprocessAllAssets 0.124ms
+			SpeedTreePostProcessor.OnPostprocessAllAssets 0.121ms
+			ScenarioDriftAssetsTracker.OnPostprocessAllAssets 0.109ms
+			RenderPipelineGlobalSettingsPostprocessor.OnPostprocessAllAssets 0.074ms
+			AudioContainerPostProcessor.OnPostprocessAllAssets 0.061ms
+	PostAssetChangesProfiler: 3.144ms
+	UnloadStreamsBegin: 1.085ms
+	GenerateScriptTypeHashes: 1.266ms
+	GenerateScriptTypeSerializationHashes: 2.225ms
+	Untracked: 797.654ms
+
+Application.AssetDatabase Initial Refresh End
+Launched and connected shader compiler UnityShaderCompiler.exe after 0.01 seconds
+Scanning for USB devices : 7.594ms
+Initializing Unity extensions:
+[MODES] ModeService[none].Initialize
+[MODES] ModeService[none].LoadModes
+[MODES] Loading mode Default (0) for mode-current-id-BogatyriMoba
+Unloading 4 Unused Serialized files (Serialized files now loaded: 0)
+Unloading 2557 unused Assets / (1.5 MB). Loaded Objects now: 3208.
+Memory consumption went from 116.7 MB to 115.2 MB.
+Total: 6.697400 ms (FindLiveObjects: 0.236000 ms CreateObjectMapping: 0.193800 ms MarkObjects: 5.466500 ms  DeleteObjects: 0.799400 ms)
+
+Batchmode quit successfully invoked - shutting down!
+Curl error 42: Callback aborted
+[Physics::Module] Cleanup current backend.
+[Physics::Module] Id: 0xf2b8ea05
+Input System module state changed to: ShutdownInProgress.
+Input Polling Thread exited.
+Input System module state changed to: Shutdown.
+[Licensing::IpcConnector] LicenseClient-fear7-notifications channel disconnected successfully.
+[Licensing::IpcConnector] LicenseClient-fear7 channel disconnected successfully.
+AcceleratorClientConnectionCallback - disconnected - :0
+Cleanup mono
+CodeReloadManager destroyed
+Shut down.
+abort_threads: Failed aborting id: 0000000000007768, mono_thread_manage will ignore it
+
+abort_threads: Failed aborting id: 0000000000000A8C, mono_thread_manage will ignore it
+
+abort_threads: Failed aborting id: 0000000000007768, mono_thread_manage will ignore it
+
+abort_threads: Failed aborting id: 0000000000000A8C, mono_thread_manage will ignore it
+
+debugger-agent: Unable to listen on 4708
+Exiting batchmode successfully now!
+Exiting without the bug reporter. Application will terminate with return code 0

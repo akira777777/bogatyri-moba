@@ -6,7 +6,10 @@
         "UnityEngine.CoreModule",
         "UnityEngine.Physics2DModule",
         "UnityEngine.InputLegacyModule",
+        "Unity.InputSystem",
         "UnityEngine.RenderingModule",
+        "Unity.Addressables",
+        "Unity.ResourceManager",
         "Unity.TextMeshPro",
         "UnityEngine.UI"
     ],

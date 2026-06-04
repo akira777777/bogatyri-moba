@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine.AddressableAssets;
 
 namespace BogatyriMoba.Core
 {
@@ -7,7 +8,7 @@ namespace BogatyriMoba.Core
     /// Handles spawning of players, bots, gems, and objects.
     /// Uses object pooling where possible.
     /// </summary>
-    public class SpawnManager : MonoBehaviour
+    public class SpawnManager : MonoBehaviour, ISpawnService
     {
         public static SpawnManager Instance { get; private set; }
 
@@ -16,9 +17,13 @@ namespace BogatyriMoba.Core
         public Transform[] team2SpawnPoints;
         public Transform gemSpawnParent;
 
-        [Header("Prefabs")]
+        [Header("Prefabs (legacy direct references)")]
         public GameObject brawlerPrefab;
         public GameObject gemPrefab;
+
+        [Header("Addressable References (future-proof)")]
+        [SerializeField] private AssetReferenceGameObject brawlerAssetRef;
+        [SerializeField] private AssetReferenceGameObject gemAssetRef;
 
         [Header("Bot Settings")]
         private static readonly string[] BotBrawlerKeys =
@@ -36,6 +41,9 @@ namespace BogatyriMoba.Core
 
         private int _nextActorNumber = 0;
 
+        private GameObject BrawlerPrefab => brawlerPrefab != null ? brawlerPrefab : (brawlerAssetRef?.Asset as GameObject);
+        private GameObject GemPrefab => gemPrefab != null ? gemPrefab : (gemAssetRef?.Asset as GameObject);
+
         private void Awake()
         {
             if (Instance != null && Instance != this)
@@ -45,17 +53,20 @@ namespace BogatyriMoba.Core
             }
             Instance = this;
             BrawlerRegistry.Clear();
+            GameServices.Register<ISpawnService>(this);
+            if (GameServices.Get<IBrawlerRegistry>() == null)
+                GameServices.Register<IBrawlerRegistry>(new BrawlerRegistryWrapper());
         }
 
         public BrawlerController SpawnPlayer(BrawlerData data, int teamId, Vector3 position)
         {
-            if (brawlerPrefab == null)
+            if (BrawlerPrefab == null)
             {
                 Debug.LogError("[SpawnManager] Brawler prefab is not assigned!");
                 return null;
             }
 
-            GameObject go = Instantiate(brawlerPrefab, position, Quaternion.identity);
+            GameObject go = Instantiate(BrawlerPrefab, position, Quaternion.identity);
             var controller = go.GetComponent<BrawlerController>();
             if (controller == null)
             {
@@ -116,7 +127,7 @@ namespace BogatyriMoba.Core
             if (_brawlerCache.TryGetValue(brawlerKey, out var cached) && cached != null)
                 return cached;
 
-            var data = Resources.Load<BrawlerData>("Brawlers/" + brawlerKey);
+            var data = AssetLoader.Default.LoadAsset<BrawlerData>("Brawlers/" + brawlerKey);
             if (data != null)
                 _brawlerCache[brawlerKey] = data;
             return data;
@@ -124,12 +135,12 @@ namespace BogatyriMoba.Core
 
         public void SpawnGem()
         {
-            if (gemPrefab == null || gemSpawnParent == null) return;
+            if (GemPrefab == null || gemSpawnParent == null) return;
 
             Vector2 offset = Random.insideUnitCircle * 3f;
             Vector3 pos = gemSpawnParent.position + new Vector3(offset.x, offset.y, 0f);
 
-            GameObject gemObject = Instantiate(gemPrefab, pos, Quaternion.identity, gemSpawnParent);
+            GameObject gemObject = Instantiate(GemPrefab, pos, Quaternion.identity, gemSpawnParent);
             var gemComponent = gemObject.GetComponent<Gem>();
             if (gemComponent == null) return;
 
@@ -206,7 +217,13 @@ namespace BogatyriMoba.Core
         {
             if (Instance == this)
                 Instance = null;
+            GameServices.Unregister<ISpawnService>();
             BrawlerRegistry.Clear();
+        }
+
+        public Transform[] GetSpawnPoints(int teamId)
+        {
+            return teamId == GameManager.TEAM_BLUE ? team1SpawnPoints : team2SpawnPoints;
         }
     }
 }

@@ -28,13 +28,13 @@ namespace BogatyriMoba.Core
 
         public BrawlerController localPlayer { get; private set; }
         public IReadOnlyList<BrawlerController> AllPlayers =>
-            SpawnManager.Instance != null
-                ? SpawnManager.Instance.AllPlayers
+            GameServices.Get<ISpawnService>() is var svc && svc != null
+                ? svc.AllPlayers
                 : System.Array.Empty<BrawlerController>();
 
         public IReadOnlyList<Gem> ActiveGems =>
-            SpawnManager.Instance != null
-                ? SpawnManager.Instance.ActiveGems
+            GameServices.Get<ISpawnService>() is var svc && svc != null
+                ? svc.ActiveGems
                 : System.Array.Empty<Gem>();
 
         private void Awake()
@@ -46,6 +46,8 @@ namespace BogatyriMoba.Core
             }
             Instance = this;
             BrawlerRegistry.Clear();
+            if (GameServices.Get<IEventPublisher>() == null)
+                GameServices.Register<IEventPublisher>(new EventBusPublisher());
         }
 
         private void Start()
@@ -62,25 +64,28 @@ namespace BogatyriMoba.Core
 
         public void StartMatch(BrawlerData playerData)
         {
-            if (SpawnManager.Instance == null)
+            var spawnService = GameServices.Get<ISpawnService>();
+            if (spawnService == null)
             {
                 Debug.LogError("[GameManager] SpawnManager is required!");
                 return;
             }
 
-            if (SpawnManager.Instance.team1SpawnPoints == null || SpawnManager.Instance.team1SpawnPoints.Length < 3 ||
-                SpawnManager.Instance.team2SpawnPoints == null || SpawnManager.Instance.team2SpawnPoints.Length < 3)
+            var team1Points = spawnService.GetSpawnPoints(TEAM_BLUE);
+            var team2Points = spawnService.GetSpawnPoints(TEAM_RED);
+            if (team1Points == null || team1Points.Length < 3 ||
+                team2Points == null || team2Points.Length < 3)
             {
                 Debug.LogError("[GameManager] Spawn points are not configured.");
                 return;
             }
 
             // Clear previous
-            SpawnManager.Instance.ClearAll();
+            spawnService.ClearAll();
 
             // Spawn local player
-            Vector3 spawnPos = SpawnManager.Instance.team1SpawnPoints[1].position;
-            localPlayer = SpawnManager.Instance.SpawnPlayer(playerData, TEAM_BLUE, spawnPos);
+            Vector3 spawnPos = team1Points[1].position;
+            localPlayer = spawnService.SpawnPlayer(playerData, TEAM_BLUE, spawnPos);
             if (localPlayer == null) return;
 
             if (cameraFollow != null)
@@ -93,22 +98,22 @@ namespace BogatyriMoba.Core
             for (int i = 0; i < 2; i++)
             {
                 string key = botPool[i % botPool.Count];
-                Vector3 pos = SpawnManager.Instance.team1SpawnPoints[i == 0 ? 0 : 2].position;
-                SpawnManager.Instance.SpawnBot(key, TEAM_BLUE, pos);
+                Vector3 pos = team1Points[i == 0 ? 0 : 2].position;
+                spawnService.SpawnBot(key, TEAM_BLUE, pos);
             }
 
             for (int i = 0; i < 3; i++)
             {
                 string key = botPool[(i + 2) % botPool.Count];
-                Vector3 pos = SpawnManager.Instance.team2SpawnPoints[i].position;
-                SpawnManager.Instance.SpawnBot(key, TEAM_RED, pos);
+                Vector3 pos = team2Points[i].position;
+                spawnService.SpawnBot(key, TEAM_RED, pos);
             }
 
             // Gems
             if (currentGameMode is GemGrabMode)
             {
                 for (int i = 0; i < 3; i++)
-                    SpawnManager.Instance.SpawnGem();
+                    spawnService.SpawnGem();
             }
 
             // Start match logic
@@ -136,18 +141,19 @@ namespace BogatyriMoba.Core
 
         public void SpawnGem()
         {
-            SpawnManager.Instance?.SpawnGem();
+            GameServices.Get<ISpawnService>()?.SpawnGem();
         }
 
         public void UnregisterGem(Gem gem)
         {
-            SpawnManager.Instance?.UnregisterGem(gem);
+            GameServices.Get<ISpawnService>()?.UnregisterGem(gem);
         }
 
         private void OnDestroy()
         {
             EventBus.Unsubscribe<PlayerSpawnedEvent>(OnPlayerSpawned);
             EventBus.Unsubscribe<MatchEndedEvent>(OnMatchEnded);
+            GameServices.Unregister<IEventPublisher>();
             BrawlerRegistry.Clear();
         }
 

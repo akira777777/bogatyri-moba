@@ -8,7 +8,7 @@ namespace BogatyriMoba.Core
     /// Handles match lifecycle: start, end, timer, score tracking.
     /// Decoupled from spawning and player management.
     /// </summary>
-    public class MatchManager : MonoBehaviour
+    public class MatchManager : MonoBehaviour, IMatchTimer
     {
         public static MatchManager Instance { get; private set; }
 
@@ -31,6 +31,7 @@ namespace BogatyriMoba.Core
                 return;
             }
             Instance = this;
+            GameServices.Register<IMatchTimer>(this);
         }
 
         private void Start()
@@ -116,6 +117,7 @@ namespace BogatyriMoba.Core
         {
             if (Instance == this)
                 Instance = null;
+            GameServices.Unregister<IMatchTimer>();
         }
     }
 }

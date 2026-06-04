@@ -30,7 +30,7 @@ namespace BogatyriMoba.Core
             if (player == null || player.IsDead) return;
 
             OnCollected?.Invoke(player);
-            SpawnManager.Instance?.UnregisterGem(this);
+            GameServices.Get<ISpawnService>()?.UnregisterGem(this);
             Destroy(gameObject);
         }
     }

@@ -36,7 +36,7 @@ namespace BogatyriMoba.UI
         public static UITheme LoadDefault()
         {
             if (_cached != null) return _cached;
-            _cached = Resources.Load<UITheme>("UI/DefaultUITheme");
+            _cached = Core.AssetLoader.Default.LoadAsset<UITheme>("UI/DefaultUITheme");
             if (_cached == null)
                 _cached = CreateInstance<UITheme>();
             return _cached;

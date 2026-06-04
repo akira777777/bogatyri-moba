@@ -5,18 +5,16 @@ namespace BogatyriMoba.Core
     [DefaultExecutionOrder(100)]
     [RequireComponent(typeof(Rigidbody2D))]
     [RequireComponent(typeof(PlayerInput))]
+    [RequireComponent(typeof(HealthComponent))]
+    [RequireComponent(typeof(MovementComponent))]
+    [RequireComponent(typeof(CombatComponent))]
     public class BrawlerController : MonoBehaviour
     {
-        private const float SpreadAngleRadians = 0.25f;
-        private const float MeleeRadiusMultiplier = 0.65f;
-        private const float AoERadiusMultiplier = 0.85f;
-
         [SerializeField] private BrawlerData data;
-        [SerializeField] private Transform projectileSpawnPoint;
         [SerializeField] private Transform visualContainer;
 
         public int ActorNumber { get; set; } = -1;
-        
+
         private int _teamId = 0;
         public int TeamId
         {
@@ -28,49 +26,52 @@ namespace BogatyriMoba.Core
             }
         }
 
-        public int CurrentHealth { get; private set; }
-        public int MaxHealth { get; private set; }
+        public int CurrentHealth => health != null ? health.CurrentHealth : 0;
+        public int MaxHealth => health != null ? health.MaxHealth : 0;
         public int PowerLevel { get; set; } = 1;
-        public int SuperCharge { get; private set; }
-        public bool IsDead { get; private set; }
-        public bool HasSuperReady => SuperCharge >= 100;
-        public bool IsStunned { get; private set; }
+        public int SuperCharge => combat != null ? combat.SuperCharge : 0;
+        public bool IsDead => health != null && health.IsDead;
+        public bool HasSuperReady => combat != null && combat.HasSuperReady;
+        public bool IsStunned => health != null && health.IsStunned;
 
-        private float attackCooldownTimer;
-        private float superCooldownTimer;
-        private float stunTimer;
-        private float shieldTimer;
-        private int shieldAmount;
+        // Legacy events — proxied from components for backward compatibility
+        public event System.Action OnDeath
+        {
+            add { if (health != null) health.OnDeath += value; }
+            remove { if (health != null) health.OnDeath -= value; }
+        }
 
-        private Rigidbody2D rb;
-        private PlayerInput input;
-        private StealthComponent stealth;
-        private BuffComponent buff;
+        public event System.Action<int, int> OnHealthChanged
+        {
+            add { if (health != null) health.OnHealthChanged += value; }
+            remove { if (health != null) health.OnHealthChanged -= value; }
+        }
 
-        public System.Action OnDeath;
-        public System.Action<int, int> OnHealthChanged;
-        public System.Action<int> OnSuperChargeChanged;
+        public event System.Action<int> OnSuperChargeChanged
+        {
+            add { if (combat != null) combat.OnSuperChargeChanged += value; }
+            remove { if (combat != null) combat.OnSuperChargeChanged -= value; }
+        }
+
         public System.Action<int> OnDealDamage;
+
+        private PlayerInput input;
+        private HealthComponent health;
+        private MovementComponent movement;
+        private CombatComponent combat;
 
         private void Awake()
         {
-            rb = GetComponent<Rigidbody2D>();
             input = GetComponent<PlayerInput>();
-            stealth = GetComponent<StealthComponent>();
-            buff = GetComponent<BuffComponent>();
+            health = GetComponent<HealthComponent>();
+            movement = GetComponent<MovementComponent>();
+            combat = GetComponent<CombatComponent>();
 
             if (visualContainer == null)
             {
                 var visual = transform.Find("VisualContainer");
                 if (visual != null)
                     visualContainer = visual;
-            }
-
-            if (projectileSpawnPoint == null && visualContainer != null)
-            {
-                var spawn = visualContainer.Find("ProjectileSpawnPoint");
-                if (spawn != null)
-                    projectileSpawnPoint = spawn;
             }
         }
 
@@ -89,14 +90,11 @@ namespace BogatyriMoba.Core
             PowerLevel = Mathf.Clamp(powerLevel, 1, 11);
             if (data != null)
             {
-                MaxHealth = data.GetHealthForPowerLevel(PowerLevel);
-                CurrentHealth = MaxHealth;
-                OnHealthChanged?.Invoke(CurrentHealth, MaxHealth);
+                int maxHp = data.GetHealthForPowerLevel(PowerLevel);
+                health?.Initialize(maxHp);
+                combat?.Initialize(data, PowerLevel);
+                movement?.Initialize(data.movementSpeed);
             }
-            IsDead = false;
-            IsStunned = false;
-            SuperCharge = 0;
-            OnSuperChargeChanged?.Invoke(SuperCharge);
             UpdateTeamVisuals();
         }
 
@@ -108,36 +106,18 @@ namespace BogatyriMoba.Core
 
         public Vector2 GetFacingDirection()
         {
-            if (visualContainer != null)
-                return visualContainer.transform.localScale.x < 0 ? Vector2.left : Vector2.right;
-
-            return transform.localScale.x < 0 ? Vector2.left : Vector2.right;
+            return movement != null ? movement.GetFacingDirection() : Vector2.right;
         }
 
         private void Update()
         {
             if (IsDead) return;
 
-            if (attackCooldownTimer > 0)
-                attackCooldownTimer -= Time.deltaTime;
-            if (superCooldownTimer > 0)
-                superCooldownTimer -= Time.deltaTime;
-            if (stunTimer > 0)
-            {
-                stunTimer -= Time.deltaTime;
-                if (stunTimer <= 0)
-                    IsStunned = false;
-            }
-            if (shieldTimer > 0)
-            {
-                shieldTimer -= Time.deltaTime;
-                if (shieldTimer <= 0)
-                    shieldAmount = 0;
-            }
+            combat?.Tick();
 
             if (IsStunned)
             {
-                rb.linearVelocity = Vector2.zero;
+                movement?.Stop();
                 return;
             }
 
@@ -149,33 +129,22 @@ namespace BogatyriMoba.Core
 
         private void HandleMovement()
         {
-            if (data == null) return;
-
-            Vector2 move = input.MoveDirection;
-            float speed = data.movementSpeed * GetSpeedMultiplier();
-            rb.linearVelocity = move * speed;
-
-            if (move.x != 0 && visualContainer != null)
-            {
-                Vector3 scale = visualContainer.transform.localScale;
-                scale.x = move.x > 0 ? Mathf.Abs(scale.x) : -Mathf.Abs(scale.x);
-                visualContainer.transform.localScale = scale;
-            }
+            if (movement == null || data == null) return;
+            movement.MoveDirection = input.MoveDirection;
+            movement.Tick();
         }
 
         private void HandleAttack()
         {
-            if (!input.AttackPressed || attackCooldownTimer > 0) return;
-
-            PerformAttack();
+            if (combat == null || !input.AttackPressed || !combat.CanAttack) return;
+            combat.PerformAttack(input.AimDirection);
             input.ClearAttackFlag();
         }
 
         private void HandleSuper()
         {
-            if (!input.SuperPressed || !HasSuperReady || superCooldownTimer > 0) return;
-
-            PerformSuper();
+            if (combat == null || !input.SuperPressed || !combat.HasSuperReady || !combat.CanSuper) return;
+            combat.PerformSuper(input.AimDirection);
             input.ClearSuperFlag();
         }
 
@@ -185,235 +154,48 @@ namespace BogatyriMoba.Core
             input.ClearGadgetFlag();
         }
 
-        private void PerformAttack()
-        {
-            if (data == null) return;
+        #region Legacy Proxy Methods
 
-            attackCooldownTimer = data.attackReloadTime;
-            int damage = Mathf.RoundToInt(data.GetDamageForPowerLevel(PowerLevel) * GetDamageMultiplier());
-            Vector2 aimDir = GetAttackDirection();
-
-            switch (data.attackType)
-            {
-                case AttackType.Melee:
-                    PerformMeleeAttack(damage, aimDir);
-                    break;
-                case AttackType.Spread:
-                    PerformSpreadAttack(damage, aimDir);
-                    break;
-                case AttackType.AoE:
-                    PerformAoEAttack(damage, aimDir);
-                    break;
-                default:
-                    SpawnProjectile(data.attackProjectilePrefab, damage, data.attackRange, aimDir, false);
-                    break;
-            }
-        }
-
-        private void PerformMeleeAttack(int damage, Vector2 aimDir)
-        {
-            float radius = data.attackRange * MeleeRadiusMultiplier;
-            Vector2 center = (Vector2)transform.position + aimDir * radius * 0.5f;
-            int hitCount = PhysicsOverlapUtility.OverlapCircle(center, radius);
-            for (int i = 0; i < hitCount; i++)
-            {
-                var enemy = PhysicsOverlapUtility.GetHit(i).GetComponent<BrawlerController>();
-                if (enemy == null || enemy.TeamId == TeamId || enemy.IsDead) continue;
-                enemy.TakeDamage(damage);
-                ChargeSuper(data.superChargePerHit);
-            }
-        }
-
-        private void PerformSpreadAttack(int damage, Vector2 aimDir)
-        {
-            float baseAngle = Mathf.Atan2(aimDir.y, aimDir.x);
-            for (int i = -1; i <= 1; i++)
-            {
-                float angle = baseAngle + i * SpreadAngleRadians;
-                Vector2 dir = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
-                SpawnProjectile(data.attackProjectilePrefab, damage, data.attackRange, dir, false);
-            }
-        }
-
-        private void PerformAoEAttack(int damage, Vector2 aimDir)
-        {
-            float radius = data.attackRange * AoERadiusMultiplier;
-            Vector2 center = (Vector2)transform.position + aimDir * radius;
-            int hitCount = PhysicsOverlapUtility.OverlapCircle(center, radius);
-            for (int i = 0; i < hitCount; i++)
-            {
-                var enemy = PhysicsOverlapUtility.GetHit(i).GetComponent<BrawlerController>();
-                if (enemy == null || enemy.TeamId == TeamId || enemy.IsDead) continue;
-                enemy.TakeDamage(damage);
-                ChargeSuper(data.superChargePerHit);
-            }
-        }
-
-        private void PerformSuper()
-        {
-            superCooldownTimer = data.ultimateAbility != null ? data.ultimateAbility.cooldown : 0.5f;
-            SuperCharge = 0;
-            OnSuperChargeChanged?.Invoke(SuperCharge);
-
-            if (data.ultimateAbility != null)
-                data.ultimateAbility.Activate(this);
-            else
-                SpawnProjectile(data.superProjectilePrefab, data.superDamage, data.superRange, GetAttackDirection(), true);
-        }
-
-        private Vector2 GetAttackDirection()
-        {
-            Vector2 aimDir = input.AimDirection;
-            if (aimDir.sqrMagnitude < 0.01f)
-                aimDir = GetFacingDirection();
-            return aimDir.normalized;
-        }
-
-        private void SpawnProjectile(GameObject prefab, int damage, float range, Vector2 aimDir, bool isSuper)
-        {
-            if (prefab == null) return;
-
-            Vector2 spawnPos = projectileSpawnPoint != null ? (Vector2)projectileSpawnPoint.position : (Vector2)transform.position;
-
-            // Try pooled projectile first
-            var pooled = PoolManager.Instance?.Get<PooledProjectile>("projectile");
-            if (pooled != null)
-            {
-                pooled.transform.position = spawnPos;
-                pooled.transform.rotation = Quaternion.identity;
-                pooled.Initialize(damage, data.projectileSpeed, aimDir, this, isSuper, data);
-                return;
-            }
-
-            // Fallback to instantiate
-            GameObject proj = Instantiate(prefab, spawnPos, Quaternion.identity);
-            var projectile = proj.GetComponent<Projectile>();
-            if (projectile != null)
-                projectile.Initialize(damage, data.projectileSpeed, aimDir, this, isSuper, data);
-
-            float travelTime = range / data.projectileSpeed;
-            Destroy(proj, travelTime);
-        }
-
+        [System.Obsolete("Use HealthComponent.TakeDamage instead")]
         public void TakeDamage(int damage, BrawlerController attacker = null)
         {
-            if (IsDead) return;
-
-            if (shieldAmount > 0)
-            {
-                int absorbed = Mathf.Min(damage, shieldAmount);
-                shieldAmount -= absorbed;
-                damage -= absorbed;
-                if (shieldAmount <= 0)
-                    shieldTimer = 0f;
-            }
-
-            if (damage <= 0) return;
-
-            if (IsStunned)
-                damage = Mathf.RoundToInt(damage * 1.2f);
-
-            CurrentHealth -= damage;
-            if (CurrentHealth < 0) CurrentHealth = 0;
-
-            OnHealthChanged?.Invoke(CurrentHealth, MaxHealth);
-
-            if (attacker != null)
-            {
-                EventBus.Publish(new DamageDealtEvent
-                {
-                    Attacker = attacker,
-                    Victim = this,
-                    Damage = damage,
-                    IsSuper = false
-                });
-            }
-
-            if (CurrentHealth <= 0)
-                Die(attacker);
+            health?.TakeDamage(damage, attacker);
         }
 
+        [System.Obsolete("Use HealthComponent.Heal instead")]
         public void Heal(int amount)
         {
-            if (IsDead) return;
-            CurrentHealth = Mathf.Min(CurrentHealth + amount, MaxHealth);
-            OnHealthChanged?.Invoke(CurrentHealth, MaxHealth);
+            health?.Heal(amount);
         }
 
+        [System.Obsolete("Use CombatComponent.ChargeSuper instead")]
         public void ChargeSuper(int amount)
         {
-            if (IsDead) return;
-            bool wasReady = HasSuperReady;
-            SuperCharge = Mathf.Min(SuperCharge + amount, 100);
-            OnSuperChargeChanged?.Invoke(SuperCharge);
-
-            if (!wasReady && HasSuperReady && data?.ultimateAbility != null)
-            {
-                EventBus.Publish(new SuperActivatedEvent
-                {
-                    Player = this,
-                    AbilityName = data.ultimateAbility.abilityName
-                });
-            }
+            combat?.ChargeSuper(amount);
         }
 
+        [System.Obsolete("Use HealthComponent.ApplyShield instead")]
         public void ApplyShield(int amount, float duration)
         {
-            shieldAmount = amount;
-            shieldTimer = duration;
+            health?.ApplyShield(amount, duration);
         }
 
+        [System.Obsolete("Use HealthComponent.ApplyStun instead")]
         public void ApplyStun(float duration)
         {
-            IsStunned = true;
-            stunTimer = duration;
-            rb.linearVelocity = Vector2.zero;
+            health?.ApplyStun(duration);
         }
 
-        private float GetSpeedMultiplier()
-        {
-            float mult = 1f;
-            if (stealth != null && stealth.IsStealthed)
-                mult *= stealth.SpeedMultiplier;
-            if (buff != null && buff.IsActive)
-                mult *= buff.SpeedMultiplier;
-            return mult;
-        }
-
-        private float GetDamageMultiplier()
-        {
-            float mult = 1f;
-            if (stealth != null && stealth.IsStealthed)
-                mult *= stealth.CritMultiplier;
-            if (buff != null && buff.IsActive)
-                mult *= buff.DamageMultiplier;
-            return mult;
-        }
-
-        private void Die(BrawlerController killer = null)
-        {
-            IsDead = true;
-            rb.linearVelocity = Vector2.zero;
-            OnDeath?.Invoke();
-
-            EventBus.Publish(new PlayerDeathEvent
-            {
-                Player = this,
-                Killer = killer,
-                TeamId = TeamId
-            });
-
-            gameObject.SetActive(false);
-        }
+        #endregion
 
         public void Respawn(Vector3 position)
         {
-            IsDead = false;
-            IsStunned = false;
-            CurrentHealth = MaxHealth;
-            transform.position = position;
-            gameObject.SetActive(true);
-            OnHealthChanged?.Invoke(CurrentHealth, MaxHealth);
+            if (data != null)
+            {
+                int maxHp = data.GetHealthForPowerLevel(PowerLevel);
+                health?.Respawn(position, maxHp);
+            }
+            combat?.Initialize(data, PowerLevel);
         }
 
         public BrawlerData GetData() => data;
@@ -427,17 +209,14 @@ namespace BogatyriMoba.Core
                 if (data != null && data.icon != null)
                 {
                     sr.sprite = data.icon;
-                    sr.color = Color.white; // display beautiful artwork in full color
+                    sr.color = Color.white;
                 }
                 else
                 {
-                    // Fallback to color-coded circle disc
                     sr.color = (_teamId == 0) ? new Color(0.2f, 0.6f, 1f) : new Color(1f, 0.3f, 0.3f);
                     var knob = Resources.GetBuiltinResource<Sprite>("UI/Skin/Knob.psd");
                     if (knob != null)
-                    {
                         sr.sprite = knob;
-                    }
                 }
             }
         }

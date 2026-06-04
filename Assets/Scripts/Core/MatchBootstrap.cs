@@ -12,7 +12,7 @@ namespace BogatyriMoba.Core
             if (!autoStartMatch || GameManager.Instance == null)
                 return;
 
-            var data = Resources.Load<BrawlerData>(defaultBrawlerResource);
+            var data = AssetLoader.Default.LoadAsset<BrawlerData>(defaultBrawlerResource);
             if (data == null)
             {
                 Debug.LogError($"MatchBootstrap: brawler not found at Resources/{defaultBrawlerResource}");

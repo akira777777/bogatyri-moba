@@ -1,7 +1,13 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace BogatyriMoba.Core
 {
+    /// <summary>
+    /// Player input handler using the new Unity Input System.
+    /// Supports Keyboard+Mouse and Gamepad with automatic device detection.
+    /// Touch input is driven externally by MobileControlsUI.
+    /// </summary>
     public class PlayerInput : MonoBehaviour
     {
         public enum InputSource
@@ -20,6 +26,14 @@ namespace BogatyriMoba.Core
         public bool SuperPressed { get; private set; }
         public bool GadgetPressed { get; private set; }
 
+        // Input Actions
+        private InputAction _moveAction;
+        private InputAction _aimMouseAction;
+        private InputAction _aimGamepadAction;
+        private InputAction _attackAction;
+        private InputAction _superAction;
+        private InputAction _gadgetAction;
+
         private void Awake()
         {
 #if UNITY_ANDROID || UNITY_IOS
@@ -27,6 +41,72 @@ namespace BogatyriMoba.Core
 #else
             inputSource = InputSource.KeyboardMouse;
 #endif
+            CreateActions();
+        }
+
+        private void OnEnable()
+        {
+            _moveAction?.Enable();
+            _aimMouseAction?.Enable();
+            _aimGamepadAction?.Enable();
+            _attackAction?.Enable();
+            _superAction?.Enable();
+            _gadgetAction?.Enable();
+        }
+
+        private void OnDisable()
+        {
+            _moveAction?.Disable();
+            _aimMouseAction?.Disable();
+            _aimGamepadAction?.Disable();
+            _attackAction?.Disable();
+            _superAction?.Disable();
+            _gadgetAction?.Disable();
+        }
+
+        private void OnDestroy()
+        {
+            _moveAction?.Dispose();
+            _aimMouseAction?.Dispose();
+            _aimGamepadAction?.Dispose();
+            _attackAction?.Dispose();
+            _superAction?.Dispose();
+            _gadgetAction?.Dispose();
+        }
+
+        private void CreateActions()
+        {
+            // Move — WASD / Arrow keys / Left stick
+            _moveAction = new InputAction("Move", InputActionType.Value);
+            _moveAction.AddCompositeBinding("2DVector")
+                .With("Up", "<Keyboard>/w")
+                .With("Down", "<Keyboard>/s")
+                .With("Left", "<Keyboard>/a")
+                .With("Right", "<Keyboard>/d");
+            _moveAction.AddCompositeBinding("2DVector")
+                .With("Up", "<Keyboard>/upArrow")
+                .With("Down", "<Keyboard>/downArrow")
+                .With("Left", "<Keyboard>/leftArrow")
+                .With("Right", "<Keyboard>/rightArrow");
+            _moveAction.AddBinding("<Gamepad>/leftStick");
+
+            // Aim — Mouse position (screen-space, converted to world in Update)
+            _aimMouseAction = new InputAction("AimMouse", InputActionType.Value, "<Mouse>/position");
+
+            // Aim — Gamepad right stick
+            _aimGamepadAction = new InputAction("AimGamepad", InputActionType.Value, "<Gamepad>/rightStick");
+
+            // Attack — Left mouse / Gamepad right trigger
+            _attackAction = new InputAction("Attack", InputActionType.Button, "<Mouse>/leftButton");
+            _attackAction.AddBinding("<Gamepad>/rightTrigger");
+
+            // Super — Space / Gamepad West (X on Xbox, Square on PS)
+            _superAction = new InputAction("Super", InputActionType.Button, "<Keyboard>/space");
+            _superAction.AddBinding("<Gamepad>/buttonWest");
+
+            // Gadget — E / Gamepad North (Y on Xbox, Triangle on PS)
+            _gadgetAction = new InputAction("Gadget", InputActionType.Button, "<Keyboard>/e");
+            _gadgetAction.AddBinding("<Gamepad>/buttonNorth");
         }
 
         private void Update()
@@ -34,30 +114,35 @@ namespace BogatyriMoba.Core
             if (inputSource != InputSource.KeyboardMouse)
                 return;
 
-            UpdateKeyboardMouse();
+            UpdateInput();
         }
 
-        private void UpdateKeyboardMouse()
+        private void UpdateInput()
         {
-            Vector2 move = Vector2.zero;
-            if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow)) move.y += 1;
-            if (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow)) move.y -= 1;
-            if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow)) move.x -= 1;
-            if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow)) move.x += 1;
-
+            // Movement
+            Vector2 move = _moveAction.ReadValue<Vector2>();
             if (move.magnitude > 1f) move.Normalize();
             MoveDirection = move.magnitude > joystickDeadzone ? move : Vector2.zero;
 
-            if (Camera.main != null)
+            // Aim — gamepad right stick takes priority if active, otherwise mouse
+            Vector2 aimGamepad = _aimGamepadAction.ReadValue<Vector2>();
+            if (aimGamepad.magnitude > joystickDeadzone)
             {
-                Vector3 mouseWorld = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                AimDirection = aimGamepad.normalized;
+            }
+            else if (Camera.main != null && Mouse.current != null)
+            {
+                Vector2 mouseScreen = _aimMouseAction.ReadValue<Vector2>();
+                Vector3 mouseWorld = Camera.main.ScreenToWorldPoint(
+                    new Vector3(mouseScreen.x, mouseScreen.y, Camera.main.nearClipPlane));
                 mouseWorld.z = 0;
                 AimDirection = (mouseWorld - transform.position).normalized;
             }
 
-            AttackPressed = Input.GetMouseButtonDown(0);
-            SuperPressed = Input.GetKeyDown(KeyCode.Space);
-            GadgetPressed = Input.GetKeyDown(KeyCode.E);
+            // Buttons
+            AttackPressed = _attackAction.WasPressedThisFrame();
+            SuperPressed = _superAction.WasPressedThisFrame();
+            GadgetPressed = _gadgetAction.WasPressedThisFrame();
         }
 
         public void SetInputSource(InputSource source)
